@@ -20,6 +20,7 @@
     "@heroui/snippet": "^2.2.30",
     "@heroui/switch": "^2.2.26",
     "@heroui/system": "^2.4.25",
+    "@heroui/table": "^2.2.29",
     "@heroui/theme": "^2.4.25",
     "@heroui/use-theme": "2.1.10",
     "@react-aria/visually-hidden": "3.8.28",

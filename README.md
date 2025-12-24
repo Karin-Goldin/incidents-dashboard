@@ -1,50 +1,80 @@
-# Vite & HeroUI Template
+# Incidents Dashboard
 
-This is a template for creating applications using Vite and HeroUI (v2).
+A modern dashboard application for viewing and managing security incidents, built with React, TypeScript, and HeroUI.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/vite-template)
+## Features
+
+- 📊 Interactive incidents table with severity, category, source, timestamp, and status
+- 🎨 Modern UI built with HeroUI components
+- 🌓 Dark/Light theme support
+- ⚡ Fast development with Vite
+- 📱 Responsive design
 
 ## Technologies Used
 
-- [Vite](https://vitejs.dev/guide/)
-- [HeroUI](https://heroui.com)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org)
-- [Framer Motion](https://www.framer.com/motion)
+- [Vite](https://vitejs.dev/guide/) - Next generation frontend tooling
+- [React](https://react.dev/) - UI library
+- [TypeScript](https://www.typescriptlang.org) - Type safety
+- [HeroUI](https://heroui.com) - React component library
+- [Tailwind CSS](https://tailwindcss.com) - Utility-first CSS framework
+- [Framer Motion](https://www.framer.com/motion) - Animation library
 
-## How to Use
+## Getting Started
 
-To clone the project, run the following command:
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository:
 
 ```bash
-git clone https://github.com/heroui-inc/vite-template.git
+git clone <your-repo-url>
+cd incidents-dashboard
 ```
 
-### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
+2. Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Run the development server
+3. Run the development server:
 
 ```bash
 npm run dev
 ```
 
-### Setup pnpm (optional)
+4. Open your browser and navigate to `http://localhost:5173`
 
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
+### Build for Production
 
 ```bash
-public-hoist-pattern[]=*@heroui/*
+npm run build
 ```
 
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
+The production build will be in the `dist` directory.
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```
+src/
+├── components/     # Reusable UI components
+├── pages/         # Page components
+├── config/        # Configuration files
+├── layouts/       # Layout components
+├── styles/        # Global styles
+└── types/         # TypeScript type definitions
+```
 
 ## License
 
-Licensed under the [MIT license](https://github.com/heroui-inc/vite-template/blob/main/LICENSE).
+Licensed under the [MIT license](LICENSE).
