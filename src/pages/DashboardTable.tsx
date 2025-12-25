@@ -160,7 +160,10 @@ const DashboardTable = () => {
               incident.severity === "CRITICAL" && currentStatus === "OPEN";
 
             return (
-              <TableRow key={incident.id}>
+              <TableRow
+                key={incident.id}
+                className="hover:bg-default-100 cursor-pointer transition-colors"
+              >
                 <TableCell className="text-center">
                   <div className="flex items-center justify-center relative">
                     <Chip

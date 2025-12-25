@@ -145,7 +145,7 @@ const Dashboard = () => {
             {severities.map((severity) => (
               <Card
                 key={severity.name}
-                className="py-2 px-3 shadow-none border-none bg-foreground-50"
+                className="py-2 px-3 shadow-none border-none bg-foreground-50 hover:bg-foreground-100 cursor-pointer transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className={`${severity.color} w-1 h-8 rounded-full`} />
