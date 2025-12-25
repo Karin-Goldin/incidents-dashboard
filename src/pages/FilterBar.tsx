@@ -35,6 +35,8 @@ const FilterBar = () => {
     timeRange: "all",
   });
 
+  const [modalFilters, setModalFilters] = useState<FilterState>(filters);
+
   // Initialize filters from URL params
   useEffect(() => {
     const severities =
@@ -89,34 +91,43 @@ const FilterBar = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const toggleSeverity = (severity: string) => {
-    const newSeverities = filters.severities.includes(severity)
-      ? filters.severities.filter((s) => s !== severity)
-      : [...filters.severities, severity];
+  useEffect(() => {
+    if (isModalOpen) {
+      setModalFilters(filters);
+    }
+  }, [isModalOpen, filters]);
 
-    const newFilters = { ...filters, severities: newSeverities };
-    setFilters(newFilters);
-    updateUrlParams(newFilters);
+  const toggleSeverity = (severity: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const newSeverities = modalFilters.severities.includes(severity)
+      ? modalFilters.severities.filter((s) => s !== severity)
+      : [...modalFilters.severities, severity];
+
+    setModalFilters({ ...modalFilters, severities: newSeverities });
   };
 
-  const toggleStatus = (status: string) => {
-    const newStatuses = filters.statuses.includes(status)
-      ? filters.statuses.filter((s) => s !== status)
-      : [...filters.statuses, status];
+  const toggleStatus = (status: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const newStatuses = modalFilters.statuses.includes(status)
+      ? modalFilters.statuses.filter((s) => s !== status)
+      : [...modalFilters.statuses, status];
 
-    const newFilters = { ...filters, statuses: newStatuses };
-    setFilters(newFilters);
-    updateUrlParams(newFilters);
+    setModalFilters({ ...modalFilters, statuses: newStatuses });
   };
 
-  const toggleCategory = (category: string) => {
-    const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter((c) => c !== category)
-      : [...filters.categories, category];
+  const toggleCategory = (category: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const newCategories = modalFilters.categories.includes(category)
+      ? modalFilters.categories.filter((c) => c !== category)
+      : [...modalFilters.categories, category];
 
-    const newFilters = { ...filters, categories: newCategories };
-    setFilters(newFilters);
-    updateUrlParams(newFilters);
+    setModalFilters({ ...modalFilters, categories: newCategories });
+  };
+
+  const applyFilters = () => {
+    setFilters(modalFilters);
+    updateUrlParams(modalFilters);
+    setIsModalOpen(false);
   };
 
   const handleSearchIpChange = (value: string) => {
@@ -155,7 +166,6 @@ const FilterBar = () => {
     setSearchParams({}, { replace: true });
   };
 
-  // Get unique categories from mockdata
   const uniqueCategories = Array.from(
     new Set(mockdata.map((item) => item.category))
   );
@@ -177,7 +187,12 @@ const FilterBar = () => {
         <Button
           color="primary"
           variant="flat"
-          onPress={() => setIsModalOpen(!isModalOpen)}
+          onPress={() => {
+            setIsModalOpen(!isModalOpen);
+            if (!isModalOpen) {
+              setModalFilters(filters);
+            }
+          }}
           className="relative"
         >
           Filters
@@ -286,7 +301,10 @@ const FilterBar = () => {
       {isModalOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsModalOpen(false)}
+          onClick={() => {
+            setIsModalOpen(false);
+            setModalFilters(filters); // Reset modal filters when closing without applying
+          }}
         >
           <Card
             className="max-w-2xl w-full max-h-[90vh] overflow-y-auto"
@@ -298,7 +316,10 @@ const FilterBar = () => {
                 isIconOnly
                 variant="light"
                 size="sm"
-                onPress={() => setIsModalOpen(false)}
+                onPress={() => {
+                  setIsModalOpen(false);
+                  setModalFilters(filters); // Reset modal filters when closing without applying
+                }}
                 aria-label="Close"
               >
                 ×
@@ -310,25 +331,32 @@ const FilterBar = () => {
                 <h4 className="font-semibold mb-3">Severity</h4>
                 <div className="flex flex-wrap gap-2">
                   {severityOptions.map((severity) => {
-                    const isSelected = filters.severities.includes(severity);
+                    const isSelected =
+                      modalFilters.severities.includes(severity);
                     return (
-                      <Chip
+                      <div
                         key={severity}
-                        color={
-                          severity === "CRITICAL"
-                            ? "danger"
-                            : severity === "HIGH"
-                              ? "warning"
-                              : severity === "MEDIUM"
-                                ? "primary"
-                                : "success"
-                        }
-                        variant={isSelected ? "solid" : "flat"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSeverity(severity, e);
+                        }}
                         className="cursor-pointer"
-                        onClick={() => toggleSeverity(severity)}
                       >
-                        {severity}
-                      </Chip>
+                        <Chip
+                          color={
+                            severity === "CRITICAL"
+                              ? "danger"
+                              : severity === "HIGH"
+                                ? "warning"
+                                : severity === "MEDIUM"
+                                  ? "primary"
+                                  : "success"
+                          }
+                          variant={isSelected ? "solid" : "flat"}
+                        >
+                          {severity}
+                        </Chip>
+                      </div>
                     );
                   })}
                 </div>
@@ -339,23 +367,29 @@ const FilterBar = () => {
                 <h4 className="font-semibold mb-3">Status</h4>
                 <div className="flex flex-wrap gap-2">
                   {statusOptions.map((status) => {
-                    const isSelected = filters.statuses.includes(status);
+                    const isSelected = modalFilters.statuses.includes(status);
                     return (
-                      <Chip
+                      <div
                         key={status}
-                        color={
-                          status === "OPEN"
-                            ? "primary"
-                            : status === "ESCALATED"
-                              ? "warning"
-                              : "success"
-                        }
-                        variant={isSelected ? "solid" : "flat"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStatus(status, e);
+                        }}
                         className="cursor-pointer"
-                        onClick={() => toggleStatus(status)}
                       >
-                        {status}
-                      </Chip>
+                        <Chip
+                          color={
+                            status === "OPEN"
+                              ? "primary"
+                              : status === "ESCALATED"
+                                ? "warning"
+                                : "success"
+                          }
+                          variant={isSelected ? "solid" : "flat"}
+                        >
+                          {status}
+                        </Chip>
+                      </div>
                     );
                   })}
                 </div>
@@ -366,17 +400,24 @@ const FilterBar = () => {
                 <h4 className="font-semibold mb-3">Category</h4>
                 <div className="flex flex-wrap gap-2">
                   {uniqueCategories.map((category) => {
-                    const isSelected = filters.categories.includes(category);
+                    const isSelected =
+                      modalFilters.categories.includes(category);
                     return (
-                      <Chip
+                      <div
                         key={category}
-                        variant={isSelected ? "solid" : "flat"}
-                        color={isSelected ? "primary" : "default"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCategory(category, e);
+                        }}
                         className="cursor-pointer"
-                        onClick={() => toggleCategory(category)}
                       >
-                        {category}
-                      </Chip>
+                        <Chip
+                          variant={isSelected ? "solid" : "flat"}
+                          color={isSelected ? "primary" : "default"}
+                        >
+                          {category}
+                        </Chip>
+                      </div>
                     );
                   })}
                 </div>
@@ -385,12 +426,23 @@ const FilterBar = () => {
               <div className="flex justify-end gap-2 pt-4 border-t">
                 <Button
                   variant="light"
-                  onPress={clearFilters}
+                  onPress={() => {
+                    const emptyFilters: FilterState = {
+                      severities: [],
+                      statuses: [],
+                      categories: [],
+                      searchIp: "",
+                      sortBy: "",
+                      sortOrder: "desc",
+                      timeRange: "all",
+                    };
+                    setModalFilters(emptyFilters);
+                  }}
                   className="text-danger"
                 >
                   Clear All
                 </Button>
-                <Button color="primary" onPress={() => setIsModalOpen(false)}>
+                <Button color="primary" onPress={applyFilters}>
                   Apply Filters
                 </Button>
               </div>

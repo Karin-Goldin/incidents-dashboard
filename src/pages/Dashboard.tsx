@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { Card, CardHeader, CardBody } from "@heroui/card";
 import {
   PieChart,
@@ -14,6 +15,7 @@ import {
 import { mockdata } from "@/mockdata";
 
 const Dashboard = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   // an helper function to get the color from the theme for rechart
   const getThemeColor = (colorName: string): string => {
     const tempEl = document.createElement("div");
@@ -83,12 +85,64 @@ const Dashboard = () => {
     { name: "LOW", color: "bg-success", count: severityCounts.LOW || 0 },
   ];
 
-  // TODO: filter the table by the status
+  // Handle severity card click to filter table
+  const handleSeverityClick = (severityName: string) => {
+    const currentSeverities =
+      searchParams.get("severity")?.split(",").filter(Boolean) || [];
+
+    const isSelected = currentSeverities.includes(severityName);
+    let newSeverities: string[];
+
+    if (isSelected) {
+      // Remove severity if already selected
+      newSeverities = currentSeverities.filter((s) => s !== severityName);
+    } else {
+      // Add severity if not selected
+      newSeverities = [...currentSeverities, severityName];
+    }
+
+    const params = new URLSearchParams(searchParams);
+
+    if (newSeverities.length > 0) {
+      params.set("severity", newSeverities.join(","));
+    } else {
+      params.delete("severity");
+    }
+
+    setSearchParams(params, { replace: true });
+  };
+
+  // Get current selected severities from URL
+  const selectedSeverities =
+    searchParams.get("severity")?.split(",").filter(Boolean) || [];
+
+  // Handle pie chart click to filter table by status
   const handlePieClick = (data: any) => {
     if (data && data.name) {
-      console.log(
-        `Clicked on ${data.name} status with ${data.value} incidents`
-      );
+      const statusName = data.name;
+      const currentStatuses =
+        searchParams.get("status")?.split(",").filter(Boolean) || [];
+
+      const isSelected = currentStatuses.includes(statusName);
+      let newStatuses: string[];
+
+      if (isSelected) {
+        // Remove status if already selected
+        newStatuses = currentStatuses.filter((s) => s !== statusName);
+      } else {
+        // Add status if not selected
+        newStatuses = [...currentStatuses, statusName];
+      }
+
+      const params = new URLSearchParams(searchParams);
+
+      if (newStatuses.length > 0) {
+        params.set("status", newStatuses.join(","));
+      } else {
+        params.delete("status");
+      }
+
+      setSearchParams(params, { replace: true });
     }
   };
 
@@ -141,19 +195,34 @@ const Dashboard = () => {
           </span>
         </CardHeader>
         <CardBody className="px-4 py-2 flex-1 flex flex-col justify-center">
-          <div className="space-y-2">
-            {severities.map((severity) => (
-              <Card
-                key={severity.name}
-                className="py-2 px-3 shadow-none border-none bg-foreground-50 hover:bg-foreground-100 cursor-pointer transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`${severity.color} w-1 h-8 rounded-full`} />
-                  <span className="flex-1 font-medium">{severity.name}</span>
-                  <span className="font-semibold">{severity.count}</span>
-                </div>
-              </Card>
-            ))}
+          <div className="space-y-2 w-full">
+            {severities.map((severity) => {
+              const isSelected = selectedSeverities.includes(severity.name);
+              return (
+                <Card
+                  key={severity.name}
+                  className={`w-full py-2 px-3 shadow-none ${
+                    isSelected
+                      ? "bg-primary-50 border-2 border-primary"
+                      : "bg-foreground-50 border-2 border-transparent"
+                  } hover:bg-foreground-100 cursor-pointer transition-colors`}
+                  isPressable
+                  onPress={() => handleSeverityClick(severity.name)}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div
+                      className={`${severity.color} w-1 h-8 rounded-full flex-shrink-0`}
+                    />
+                    <span className="font-medium text-left">
+                      {severity.name}
+                    </span>
+                    <span className="font-semibold flex-shrink-0 ml-auto">
+                      {severity.count}
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </CardBody>
       </Card>
