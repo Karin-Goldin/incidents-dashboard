@@ -6,6 +6,7 @@ import FilterBar from "./pages/FilterBar";
 import { filterAndSortIncidents } from "./utils/filterUtils";
 import type { FilterState } from "./pages/FilterBar";
 import { mockdata } from "./mockdata";
+import Header from "./pages/Header";
 
 function App() {
   const [searchParams] = useSearchParams();
@@ -69,6 +70,7 @@ function App() {
 
   return (
     <>
+      <Header />
       <Dashboard />
       <FilterBar />
       <DashboardTable
