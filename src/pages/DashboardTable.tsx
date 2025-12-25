@@ -20,8 +20,19 @@ import { Pagination } from "@heroui/pagination";
 import { Spinner } from "@heroui/spinner";
 import { mockdata } from "@/mockdata";
 import warningAnimation from "../../warning.json";
+import type { Incident } from "@/utils/filterUtils";
 
-const DashboardTable = () => {
+interface DashboardTableProps {
+  filteredData?: Incident[];
+  incidentStatuses: Record<string, string>;
+  onStatusChange: (incidentId: string, newStatus: string) => void;
+}
+
+const DashboardTable = ({
+  filteredData = mockdata,
+  incidentStatuses,
+  onStatusChange,
+}: DashboardTableProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 5;
@@ -35,22 +46,15 @@ const DashboardTable = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const [incidentStatuses, setIncidentStatuses] = useState<
-    Record<string, string>
-  >(
-    mockdata.reduce(
-      (acc, incident) => {
-        acc[incident.id] = incident.status;
-        return acc;
-      },
-      {} as Record<string, string>
-    )
-  );
+  // Reset to page 1 when filtered data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredData.length]);
 
-  const totalPages = Math.ceil(mockdata.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedData = mockdata.slice(startIndex, endIndex);
+  const paginatedData = filteredData.slice(startIndex, endIndex);
   // Map severity to Chip color
   const getChipSeverityColor = (
     severity: string
@@ -92,10 +96,7 @@ const DashboardTable = () => {
   };
 
   const handleStatusChange = (incidentId: string, newStatus: string) => {
-    setIncidentStatuses((prev) => ({
-      ...prev,
-      [incidentId]: newStatus,
-    }));
+    onStatusChange(incidentId, newStatus);
   };
 
   // Format timestamp to "Tue Jun 24 2025 09:49:53" format
@@ -169,7 +170,9 @@ const DashboardTable = () => {
                     <Chip
                       color={getChipSeverityColor(incident.severity)}
                       variant="flat"
-                      className={getChipSeverityClasses(incident.severity)}
+                      className={`${getChipSeverityClasses(incident.severity)} ${
+                        isCriticalOpen ? "animate-blink-chip" : ""
+                      }`}
                     >
                       {incident.severity}
                     </Chip>
