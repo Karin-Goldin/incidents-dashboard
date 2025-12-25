@@ -10,7 +10,7 @@ import { mockdata } from "@/mockdata";
 
 const DashboardTable = () => {
   return (
-    <div>
+    <div className="p-4">
       <Table aria-label="Example static collection table">
         <TableHeader>
           <TableColumn>SEVERITY</TableColumn>
