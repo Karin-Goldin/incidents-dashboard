@@ -6,4 +6,5 @@ export * from "./slices/incidentsSlice";
 export * from "./slices/authSlice";
 export * from "./slices/connectionSlice";
 export type { FilterState, IncidentStatuses } from "./types";
-
+export { loginAsync } from "./slices/authSlice";
+export { fetchIncidents } from "./slices/incidentsSlice";

@@ -3,20 +3,30 @@ import { useSearchParams } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import DashboardTable from "./pages/DashboardTable";
 import FilterBar from "./pages/FilterBar";
+import Login from "./pages/Login";
 import { filterAndSortIncidents } from "./utils/filterUtils";
 import {
   useAppDispatch,
   useAppSelector,
   setFilters,
   updateIncidentStatus,
+  fetchIncidents,
 } from "./store";
 import Header from "./pages/Header";
 
 function App() {
   const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const filters = useAppSelector((state) => state.filters);
   const incidentStatuses = useAppSelector((state) => state.incidents.statuses);
   const [searchParams] = useSearchParams();
+
+  // Fetch incidents on mount if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchIncidents());
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -47,12 +57,24 @@ function App() {
     );
   }, [searchParams, dispatch]);
 
+  // Get incidents from Redux
+  const incidents = useAppSelector((state) => state.incidents.incidents);
+
   // Filter and sort the data
-  const filteredData = filterAndSortIncidents(filters, incidentStatuses);
+  const filteredData = filterAndSortIncidents(
+    incidents,
+    filters,
+    incidentStatuses
+  );
 
   const handleStatusChange = (incidentId: string, newStatus: string) => {
     dispatch(updateIncidentStatus({ id: incidentId, status: newStatus }));
   };
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
   return (
     <>

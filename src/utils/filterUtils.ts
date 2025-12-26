@@ -1,13 +1,12 @@
-import { mockdata } from "@/mockdata";
 import type { FilterState } from "@/store";
-
-export type Incident = (typeof mockdata)[0];
+import type { Incident } from "@/types/incident";
 
 export const filterAndSortIncidents = (
+  incidents: Incident[],
   filters: FilterState,
   incidentStatuses: Record<string, string>
 ): Incident[] => {
-  let filtered = [...mockdata];
+  let filtered = [...incidents];
 
   // Filter by severity
   if (filters.severities.length > 0) {

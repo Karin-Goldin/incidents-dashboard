@@ -10,7 +10,6 @@ import {
   DropdownItem,
 } from "@heroui/dropdown";
 import { Chip } from "@heroui/chip";
-import { mockdata } from "@/mockdata";
 import {
   useAppDispatch,
   useAppSelector,
@@ -26,6 +25,7 @@ import {
 const FilterBar = () => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector((state) => state.filters);
+  const incidents = useAppSelector((state) => state.incidents.incidents);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalFilters, setModalFilters] = useState<FilterState>(filters);
@@ -154,7 +154,7 @@ const FilterBar = () => {
   };
 
   const uniqueCategories = Array.from(
-    new Set(mockdata.map((item) => item.category))
+    new Set(incidents.map((item) => item.category))
   );
 
   const severityOptions = ["CRITICAL", "HIGH", "MEDIUM", "LOW"];
