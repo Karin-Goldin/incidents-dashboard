@@ -11,30 +11,23 @@ import {
 } from "@heroui/dropdown";
 import { Chip } from "@heroui/chip";
 import { mockdata } from "@/mockdata";
-
-type FilterState = {
-  severities: string[];
-  statuses: string[];
-  categories: string[];
-  searchIp: string;
-  sortBy: "timestamp" | "severity" | "";
-  sortOrder: "asc" | "desc";
-  timeRange: "all" | "24h" | "7d" | "30d";
-};
+import {
+  useAppDispatch,
+  useAppSelector,
+  setFilters,
+  setSearchIp,
+  setSortBy,
+  setSortOrder,
+  setTimeRange,
+  clearFilters,
+  type FilterState,
+} from "@/store";
 
 const FilterBar = () => {
+  const dispatch = useAppDispatch();
+  const filters = useAppSelector((state) => state.filters);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
-    severities: [],
-    statuses: [],
-    categories: [],
-    searchIp: "",
-    sortBy: "",
-    sortOrder: "desc",
-    timeRange: "all",
-  });
-
   const [modalFilters, setModalFilters] = useState<FilterState>(filters);
 
   // Initialize filters from URL params
@@ -53,16 +46,18 @@ const FilterBar = () => {
     const timeRange =
       (searchParams.get("timeRange") as "all" | "24h" | "7d" | "30d") || "all";
 
-    setFilters({
-      severities,
-      statuses,
-      categories,
-      searchIp,
-      sortBy,
-      sortOrder,
-      timeRange,
-    });
-  }, [searchParams]);
+    dispatch(
+      setFilters({
+        severities,
+        statuses,
+        categories,
+        searchIp,
+        sortBy,
+        sortOrder,
+        timeRange,
+      })
+    );
+  }, [searchParams, dispatch]);
 
   // Update URL params when filters change
   const updateUrlParams = (newFilters: FilterState) => {
@@ -125,14 +120,14 @@ const FilterBar = () => {
   };
 
   const applyFilters = () => {
-    setFilters(modalFilters);
+    dispatch(setFilters(modalFilters));
     updateUrlParams(modalFilters);
     setIsModalOpen(false);
   };
 
   const handleSearchIpChange = (value: string) => {
+    dispatch(setSearchIp(value));
     const newFilters = { ...filters, searchIp: value };
-    setFilters(newFilters);
     updateUrlParams(newFilters);
   };
 
@@ -141,28 +136,20 @@ const FilterBar = () => {
       filters.sortBy === sortBy && filters.sortOrder === "desc"
         ? "asc"
         : "desc";
+    dispatch(setSortBy(sortBy));
+    dispatch(setSortOrder(newSortOrder));
     const newFilters = { ...filters, sortBy, sortOrder: newSortOrder };
-    setFilters(newFilters);
     updateUrlParams(newFilters);
   };
 
   const handleTimeRangeChange = (timeRange: "all" | "24h" | "7d" | "30d") => {
+    dispatch(setTimeRange(timeRange));
     const newFilters = { ...filters, timeRange };
-    setFilters(newFilters);
     updateUrlParams(newFilters);
   };
 
-  const clearFilters = () => {
-    const emptyFilters: FilterState = {
-      severities: [],
-      statuses: [],
-      categories: [],
-      searchIp: "",
-      sortBy: "",
-      sortOrder: "desc",
-      timeRange: "all",
-    };
-    setFilters(emptyFilters);
+  const handleClearFilters = () => {
+    dispatch(clearFilters());
     setSearchParams({}, { replace: true });
   };
 
@@ -288,7 +275,7 @@ const FilterBar = () => {
             <Button
               variant="light"
               size="sm"
-              onPress={clearFilters}
+              onPress={handleClearFilters}
               className="text-danger"
             >
               Clear All
@@ -455,4 +442,3 @@ const FilterBar = () => {
 };
 
 export default FilterBar;
-export type { FilterState };

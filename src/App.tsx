@@ -1,35 +1,22 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import DashboardTable from "./pages/DashboardTable";
 import FilterBar from "./pages/FilterBar";
 import { filterAndSortIncidents } from "./utils/filterUtils";
-import type { FilterState } from "./pages/FilterBar";
-import { mockdata } from "./mockdata";
+import {
+  useAppDispatch,
+  useAppSelector,
+  setFilters,
+  updateIncidentStatus,
+} from "./store";
 import Header from "./pages/Header";
 
 function App() {
+  const dispatch = useAppDispatch();
+  const filters = useAppSelector((state) => state.filters);
+  const incidentStatuses = useAppSelector((state) => state.incidents.statuses);
   const [searchParams] = useSearchParams();
-  const [filters, setFilters] = useState<FilterState>({
-    severities: [],
-    statuses: [],
-    categories: [],
-    searchIp: "",
-    sortBy: "",
-    sortOrder: "desc",
-    timeRange: "all",
-  });
-  const [incidentStatuses, setIncidentStatuses] = useState<
-    Record<string, string>
-  >(
-    mockdata.reduce(
-      (acc, incident) => {
-        acc[incident.id] = incident.status;
-        return acc;
-      },
-      {} as Record<string, string>
-    )
-  );
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -47,25 +34,24 @@ function App() {
     const timeRange =
       (searchParams.get("timeRange") as "all" | "24h" | "7d" | "30d") || "all";
 
-    setFilters({
-      severities,
-      statuses,
-      categories,
-      searchIp,
-      sortBy,
-      sortOrder,
-      timeRange,
-    });
-  }, [searchParams]);
+    dispatch(
+      setFilters({
+        severities,
+        statuses,
+        categories,
+        searchIp,
+        sortBy,
+        sortOrder,
+        timeRange,
+      })
+    );
+  }, [searchParams, dispatch]);
 
   // Filter and sort the data
   const filteredData = filterAndSortIncidents(filters, incidentStatuses);
 
   const handleStatusChange = (incidentId: string, newStatus: string) => {
-    setIncidentStatuses((prev) => ({
-      ...prev,
-      [incidentId]: newStatus,
-    }));
+    dispatch(updateIncidentStatus({ id: incidentId, status: newStatus }));
   };
 
   return (

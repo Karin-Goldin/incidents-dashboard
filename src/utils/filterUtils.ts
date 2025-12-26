@@ -1,5 +1,5 @@
 import { mockdata } from "@/mockdata";
-import type { FilterState } from "@/pages/FilterBar";
+import type { FilterState } from "@/store";
 
 export type Incident = (typeof mockdata)[0];
 
