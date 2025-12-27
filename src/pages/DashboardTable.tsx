@@ -172,7 +172,7 @@ const DashboardTable = ({
                       <Chip
                         color={getChipSeverityColor(incident.severity)}
                         variant="flat"
-                        className={`${getChipSeverityClasses(incident.severity)} ${
+                        className={`${getChipSeverityClasses(incident.severity)} min-w-[85px] justify-center ${
                           isCriticalOpen ? "animate-blink-chip" : ""
                         }`}
                       >
@@ -205,7 +205,7 @@ const DashboardTable = ({
                           variant="solid"
                           color={getStatusColor(currentStatus)}
                           size="sm"
-                          className="text-white"
+                          className="text-white min-w-[100px]"
                         >
                           {currentStatus}
                         </Button>

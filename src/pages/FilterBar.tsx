@@ -184,13 +184,9 @@ const FilterBar = () => {
         >
           Filters
           {activeFilterCount > 0 && (
-            <Chip
-              size="sm"
-              color="danger"
-              className="absolute -top-2 -right-2 min-w-[20px] h-5 flex items-center justify-center"
-            >
+            <span className="absolute -top-1 -right-1 min-w-[22px] h-[22px] flex items-center justify-center bg-red-600 text-white font-bold text-[11px] rounded-full shadow-md z-10 px-1 leading-none">
               {activeFilterCount}
-            </Chip>
+            </span>
           )}
         </Button>
 

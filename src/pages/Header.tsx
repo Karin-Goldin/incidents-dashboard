@@ -1,6 +1,7 @@
 import { Chip } from "@heroui/chip";
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/store";
+import ThemeSwitch from "@/components/ThemeSwitch";
 
 interface HeaderProps {
   title?: string;
@@ -177,6 +178,10 @@ const Header = ({
                   ? "Connecting..."
                   : "Offline Mode"}
             </Chip>
+
+            <div className="h-4 w-px bg-default-300" />
+
+            <ThemeSwitch />
           </div>
         </div>
       </div>
