@@ -11,12 +11,16 @@ import {
   setFilters,
   updateIncidentStatus,
   fetchIncidents,
+  addIncident,
 } from "./store";
+import { websocketService } from "./services/websocketService";
+import { setStatus, setLastUpdate } from "./store";
 import Header from "./pages/Header";
 
 function App() {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const token = useAppSelector((state) => state.auth.token);
   const filters = useAppSelector((state) => state.filters);
   const incidentStatuses = useAppSelector((state) => state.incidents.statuses);
   const [searchParams] = useSearchParams();
@@ -27,6 +31,48 @@ function App() {
       dispatch(fetchIncidents());
     }
   }, [dispatch, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !token) {
+      websocketService.disconnect();
+      return;
+    }
+
+    const connectTimeout = setTimeout(() => {
+      websocketService.connect(token, {
+        onNewIncident: (incident) => {
+          dispatch(addIncident(incident));
+        },
+        onUpdateIncident: (incident) => {
+          dispatch(addIncident(incident));
+        },
+        onConnect: () => {
+          dispatch(setStatus("connected"));
+          dispatch(setLastUpdate(Date.now()));
+        },
+        onDisconnect: () => {
+          if (websocketService.getReadyState() === WebSocket.CLOSED) {
+            dispatch(setStatus("disconnected"));
+          } else {
+            dispatch(setStatus("reconnecting"));
+          }
+        },
+        onError: (error) => {
+          dispatch(setStatus("disconnected"));
+        },
+      });
+
+      return () => {
+        clearTimeout(connectTimeout);
+        websocketService.disconnect();
+      };
+    }, 100);
+
+    return () => {
+      clearTimeout(connectTimeout);
+      websocketService.disconnect();
+    };
+  }, [isAuthenticated, token, dispatch]);
 
   // Initialize filters from URL params
   useEffect(() => {

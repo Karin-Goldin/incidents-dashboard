@@ -9,7 +9,7 @@ interface ConnectionState {
 }
 
 const initialState: ConnectionState = {
-  status: "connected",
+  status: "disconnected",
   lastUpdate: 0,
   latency: 45,
 };

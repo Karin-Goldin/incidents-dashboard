@@ -60,11 +60,44 @@ const incidentsSlice = createSlice({
         return acc;
       }, {} as IncidentStatuses);
     },
+    addIncident: (state, action: PayloadAction<Incident>) => {
+      // Check if incident already exists (avoid duplicates)
+      const existingIndex = state.incidents.findIndex(
+        (inc) => inc.id === action.payload.id
+      );
+
+      if (existingIndex === -1) {
+        // Add new incident at the beginning (most recent first)
+        state.incidents.unshift(action.payload);
+        state.statuses[action.payload.id] = action.payload.status;
+      } else {
+        // Update existing incident
+        state.incidents[existingIndex] = action.payload;
+        state.statuses[action.payload.id] = action.payload.status;
+      }
+    },
+    updateIncident: (state, action: PayloadAction<Incident>) => {
+      const index = state.incidents.findIndex(
+        (inc) => inc.id === action.payload.id
+      );
+
+      if (index !== -1) {
+        state.incidents[index] = action.payload;
+        state.statuses[action.payload.id] = action.payload.status;
+      }
+    },
     updateIncidentStatus: (
       state,
       action: PayloadAction<{ id: string; status: string }>
     ) => {
       state.statuses[action.payload.id] = action.payload.status;
+      // Also update the incident object if it exists
+      const incident = state.incidents.find(
+        (inc) => inc.id === action.payload.id
+      );
+      if (incident) {
+        incident.status = action.payload.status as Incident["status"];
+      }
     },
     setStatuses: (state, action: PayloadAction<IncidentStatuses>) => {
       state.statuses = action.payload;
@@ -89,7 +122,12 @@ const incidentsSlice = createSlice({
   },
 });
 
-export const { setIncidents, updateIncidentStatus, setStatuses } =
-  incidentsSlice.actions;
+export const {
+  setIncidents,
+  addIncident,
+  updateIncident,
+  updateIncidentStatus,
+  setStatuses,
+} = incidentsSlice.actions;
 
 export default incidentsSlice.reducer;
