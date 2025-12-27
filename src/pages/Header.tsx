@@ -1,19 +1,16 @@
 import { Chip } from "@heroui/chip";
 import { useState, useEffect } from "react";
+import { useAppSelector } from "@/store";
 
 interface HeaderProps {
   title?: string;
   // Optional: Allow parent to control connection status
   status?: "connected" | "reconnecting" | "disconnected";
-  onStatusChange?: (
-    status: "connected" | "reconnecting" | "disconnected"
-  ) => void;
 }
 
 const Header = ({
   title = "Security Operations Center - Incident Dashboard",
   status: externalStatus,
-  onStatusChange,
 }: HeaderProps) => {
   // Helper function to get HeroUI theme colors
   const getThemeColor = (
@@ -37,44 +34,44 @@ const Header = ({
     return computedColor;
   };
 
-  // Connection status state
-  const [internalStatus, setInternalStatus] = useState<
+  // Connection status state (fallback אם לא נשלח מ-props)
+  const [internalStatus] = useState<
     "connected" | "reconnecting" | "disconnected"
   >("connected");
-  const [lastUpdate, setLastUpdate] = useState(0);
-  const [latency, setLatency] = useState(45);
+
+  // קבלת lastUpdate מ-Redux (timestamp של העדכון האחרון)
+  const lastUpdateTimestamp = useAppSelector(
+    (state) => state.connection.lastUpdate
+  );
+  // חישוב כמה שניות עברו מאז העדכון האחרון ט
+  const [secondsSinceUpdate, setSecondsSinceUpdate] = useState(0);
 
   // Use external status if provided, otherwise use internal
   const connectionStatus = externalStatus || internalStatus;
 
-  // Simulate connection monitoring and updates
+  // עדכון המונה כל שנייה - מחשב כמה זמן עבר מאז העדכון האחרון
   useEffect(() => {
     const updateTimer = setInterval(() => {
-      setLastUpdate((prev) => prev + 1);
+      if (lastUpdateTimestamp > 0) {
+        const now = Date.now();
+        const seconds = Math.floor((now - lastUpdateTimestamp) / 1000);
+        setSecondsSinceUpdate(seconds);
+      } else {
+        setSecondsSinceUpdate(0);
+      }
     }, 1000);
 
-    // Simulate occasional reconnection (for demo purposes)
-    // Remove this in production and use real connection monitoring
-    const statusCheck = setInterval(() => {
-      const random = Math.random();
-      if (random > 0.95) {
-        const newStatus = "reconnecting";
-        setInternalStatus(newStatus);
-        onStatusChange?.(newStatus);
-
-        setTimeout(() => {
-          setInternalStatus("connected");
-          onStatusChange?.("connected");
-        }, 2000);
-      }
-      setLatency(Math.floor(Math.random() * 30) + 30);
-    }, 10000);
+    // עדכון מיידי כשמגיע lastUpdateTimestamp חדש
+    if (lastUpdateTimestamp > 0) {
+      const now = Date.now();
+      const seconds = Math.floor((now - lastUpdateTimestamp) / 1000);
+      setSecondsSinceUpdate(seconds);
+    }
 
     return () => {
       clearInterval(updateTimer);
-      clearInterval(statusCheck);
     };
-  }, [onStatusChange]);
+  }, [lastUpdateTimestamp]);
 
   const getStatusConfig = () => {
     switch (connectionStatus) {
@@ -156,31 +153,11 @@ const Header = ({
               </svg>
               <span>
                 Last update:{" "}
-                <strong className="text-foreground">{lastUpdate}s ago</strong>
+                <strong className="text-foreground">
+                  {secondsSinceUpdate}s ago
+                </strong>
               </span>
             </div>
-
-            {connectionStatus === "connected" && (
-              <>
-                <div className="h-4 w-px bg-default-300" />
-
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3].map((bar) => (
-                      <div
-                        key={bar}
-                        className="w-1 rounded-full bg-success-500 transition-all"
-                        style={{
-                          height: `${bar * 4 + 4}px`,
-                          opacity: latency < bar * 30 ? 1 : 0.3,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-default-500">{latency}ms</span>
-                </div>
-              </>
-            )}
 
             <Chip
               size="sm"

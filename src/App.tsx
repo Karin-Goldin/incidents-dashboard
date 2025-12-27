@@ -42,6 +42,8 @@ function App() {
       websocketService.connect(token, {
         onNewIncident: (incident) => {
           dispatch(addIncident(incident));
+
+          dispatch(setLastUpdate(Date.now()));
         },
         onUpdateIncident: (incident) => {
           dispatch(addIncident(incident));
@@ -57,7 +59,7 @@ function App() {
             dispatch(setStatus("reconnecting"));
           }
         },
-        onError: (error) => {
+        onError: () => {
           dispatch(setStatus("disconnected"));
         },
       });
@@ -105,6 +107,8 @@ function App() {
 
   // Get incidents from Redux
   const incidents = useAppSelector((state) => state.incidents.incidents);
+  // Get connection status from Redux
+  const connectionStatus = useAppSelector((state) => state.connection.status);
 
   // Filter and sort the data
   const filteredData = filterAndSortIncidents(
@@ -124,7 +128,7 @@ function App() {
 
   return (
     <>
-      <Header />
+      <Header status={connectionStatus} />
       <Dashboard />
       <FilterBar />
       <DashboardTable
