@@ -23,13 +23,11 @@ export const authService = {
       credentials
     );
 
-    // Handle different possible response formats
     const data = response.data;
     const accessToken =
       data.accessToken || (data as any).access_token || (data as any).token;
     const refreshToken = data.refreshToken || (data as any).refresh_token;
 
-    // Store tokens
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken);
     }

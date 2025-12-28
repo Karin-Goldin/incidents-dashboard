@@ -8,7 +8,6 @@ import { incidentsService } from "@/services/incidentsService";
 import type { IncidentStatuses } from "../types";
 import type { Incident } from "@/types/incident";
 
-// Create entity adapter for normalized state management
 const incidentsAdapter = createEntityAdapter<Incident>({
   // Sort by timestamp descending (most recent first)
   sortComparer: (a, b) =>
@@ -26,7 +25,6 @@ interface IncidentsState
   };
 }
 
-// Load saved statuses from localStorage on initialization
 const loadSavedStatuses = (): IncidentStatuses => {
   try {
     const saved = localStorage.getItem("incidentStatuses");

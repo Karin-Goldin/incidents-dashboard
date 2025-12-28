@@ -2,11 +2,6 @@
  * Helper functions for working with theme colors and severity/status mappings
  */
 
-/**
- * Gets the computed color value from a theme color class name
- * @param colorName - The color name (e.g., "primary", "warning", "success", "danger")
- * @returns The computed CSS color value as a string
- */
 export const getThemeColor = (colorName: string): string => {
   const tempEl = document.createElement("div");
   const colorClassMap: Record<string, string> = {
@@ -42,11 +37,6 @@ export const getChipSeverityColor = (
   return severityMap[severity] || "default";
 };
 
-/**
- * Maps severity to CSS classes for styling
- * @param severity - The severity level (CRITICAL, HIGH, MEDIUM, LOW)
- * @returns CSS classes string for the severity
- */
 export const getChipSeverityClasses = (severity: string): string => {
   const classMap: Record<string, string> = {
     CRITICAL: "bg-danger-50 text-danger",
@@ -57,11 +47,6 @@ export const getChipSeverityClasses = (severity: string): string => {
   return classMap[severity] || "";
 };
 
-/**
- * Maps status to Chip color prop
- * @param status - The status (OPEN, ESCALATED, RESOLVED)
- * @returns The corresponding color for HeroUI Chip/Button component
- */
 export const getStatusColor = (
   status: string
 ): "primary" | "warning" | "success" | "default" => {

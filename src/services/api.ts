@@ -3,21 +3,16 @@ import { websocketService } from "./websocketService";
 
 const API_BASE_URL = "https://incident-platform.azurewebsites.net";
 
-// Store reference to avoid circular dependency
-// This will be set from store.ts after store is created
 let storeRef: {
   dispatch: (action: { type: string; payload?: any }) => void;
 } | null = null;
 
-export const setStoreRef = (
-  store: {
-    dispatch: (action: { type: string; payload?: any }) => void;
-  }
-) => {
+export const setStoreRef = (store: {
+  dispatch: (action: { type: string; payload?: any }) => void;
+}) => {
   storeRef = store;
 };
 
-// Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true, // Important: Handle cookies for refresh token
@@ -26,10 +21,8 @@ export const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request interceptor to add auth token to requests
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Don't add token to login/refresh endpoints
     const isAuthEndpoint =
       config.url?.includes("/api/auth/login") ||
       config.url?.includes("/api/auth/refresh");

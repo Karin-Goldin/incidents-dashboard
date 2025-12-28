@@ -1,10 +1,5 @@
 import type { Incident } from "@/types/incident";
 
-/**
- * Count incidents by severity
- * @param incidents - Array of incidents
- * @returns Record mapping severity to count
- */
 export const countIncidentsBySeverity = (
   incidents: Incident[]
 ): Record<string, number> => {
@@ -18,12 +13,6 @@ export const countIncidentsBySeverity = (
   );
 };
 
-/**
- * Count incidents by status
- * @param incidents - Array of incidents
- * @param incidentStatuses - Record mapping incident ID to current status
- * @returns Record mapping status to count
- */
 export const countIncidentsByStatus = (
   incidents: Incident[],
   incidentStatuses: Record<string, string>
@@ -39,11 +28,6 @@ export const countIncidentsByStatus = (
   );
 };
 
-/**
- * Calculate trend data for the last 7 days
- * @param incidents - Array of incidents
- * @returns Array of { date: string, count: number } for the last 7 days
- */
 export const getTrendData = (
   incidents: Incident[]
 ): Array<{ date: string; count: number }> => {

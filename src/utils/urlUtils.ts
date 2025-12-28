@@ -1,24 +1,16 @@
 import type { FilterState } from "@/store";
 
-/**
- * Parses URL search params and returns FilterState
- * @param searchParams - URLSearchParams object
- * @returns FilterState object
- */
 export const parseFiltersFromUrl = (
   searchParams: URLSearchParams
 ): FilterState => {
   const severities =
     searchParams.get("severity")?.split(",").filter(Boolean) || [];
-  const statuses =
-    searchParams.get("status")?.split(",").filter(Boolean) || [];
+  const statuses = searchParams.get("status")?.split(",").filter(Boolean) || [];
   const categories =
     searchParams.get("category")?.split(",").filter(Boolean) || [];
   const searchIp = searchParams.get("searchIp") || "";
-  const sortBy =
-    (searchParams.get("sortBy") as "timestamp" | "severity") || "";
-  const sortOrder =
-    (searchParams.get("sortOrder") as "asc" | "desc") || "desc";
+  const sortBy = (searchParams.get("sortBy") as "timestamp" | "severity") || "";
+  const sortOrder = (searchParams.get("sortOrder") as "asc" | "desc") || "desc";
   const timeRange =
     (searchParams.get("timeRange") as "all" | "24h" | "7d" | "30d") || "all";
 
@@ -33,14 +25,12 @@ export const parseFiltersFromUrl = (
   };
 };
 
-/**
- * Updates URL search params based on FilterState
- * @param filters - FilterState object
- * @param setSearchParams - Function to update URL search params (from useSearchParams hook)
- */
 export const updateFiltersInUrl = (
   filters: FilterState,
-  setSearchParams: (params: URLSearchParams, options?: { replace?: boolean }) => void
+  setSearchParams: (
+    params: URLSearchParams,
+    options?: { replace?: boolean }
+  ) => void
 ): void => {
   const params = new URLSearchParams();
 
@@ -66,4 +56,3 @@ export const updateFiltersInUrl = (
 
   setSearchParams(params, { replace: true });
 };
-

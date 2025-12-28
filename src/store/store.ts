@@ -14,7 +14,6 @@ export const store = configureStore({
   },
 });
 
-// Set store reference for API interceptor to update token after refresh
 setStoreRef(store);
 
 export type RootState = ReturnType<typeof store.getState>;

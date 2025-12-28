@@ -28,8 +28,6 @@ class WebSocketService {
 
     this.callbacks = callbacks;
 
-    console.log("🔌 Attempting Socket.IO connection...");
-
     this.socket = io(this.url, {
       transports: ["websocket"],
       auth: {
@@ -41,12 +39,10 @@ class WebSocketService {
     });
 
     this.socket.on("connect", () => {
-      console.log("✅ Socket.IO connected", this.socket?.id);
       this.callbacks.onConnect?.();
     });
 
-    this.socket.on("disconnect", (reason) => {
-      console.log("🔌 Socket.IO disconnected:", reason);
+    this.socket.on("disconnect", () => {
       this.callbacks.onDisconnect?.();
     });
 
@@ -58,7 +54,6 @@ class WebSocketService {
     this.socket.on("incident_new", (data: Incident | { data: Incident }) => {
       const incident = (data as any).data || data;
       if (incident && incident.id && incident.severity) {
-        console.log("🆕 New incident received:", incident);
         this.callbacks.onNewIncident?.(incident as Incident);
       }
     });
@@ -66,7 +61,6 @@ class WebSocketService {
     this.socket.on("incident_update", (data: Incident | { data: Incident }) => {
       const incident = (data as any).data || data;
       if (incident && incident.id && incident.severity) {
-        console.log("🔄 Incident update received:", incident);
         this.callbacks.onNewIncident?.(incident as Incident);
       }
     });

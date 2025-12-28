@@ -19,17 +19,15 @@ const Header = ({
     "connected" | "reconnecting" | "disconnected"
   >("connected");
 
-  // קבלת lastUpdate מ-Redux (timestamp של העדכון האחרון)
   const lastUpdateTimestamp = useAppSelector(
     (state) => state.connection.lastUpdate
   );
-  // חישוב כמה שניות עברו מאז העדכון האחרון ט
+
   const [secondsSinceUpdate, setSecondsSinceUpdate] = useState(0);
 
   // Use external status if provided, otherwise use internal
   const connectionStatus = externalStatus || internalStatus;
 
-  // עדכון המונה כל שנייה - מחשב כמה זמן עבר מאז העדכון האחרון
   useEffect(() => {
     const updateTimer = setInterval(() => {
       if (lastUpdateTimestamp > 0) {
@@ -41,7 +39,6 @@ const Header = ({
       }
     }, 1000);
 
-    // עדכון מיידי כשמגיע lastUpdateTimestamp חדש
     if (lastUpdateTimestamp > 0) {
       const now = Date.now();
       const seconds = Math.floor((now - lastUpdateTimestamp) / 1000);

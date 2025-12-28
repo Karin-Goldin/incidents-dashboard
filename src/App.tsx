@@ -30,7 +30,6 @@ function App() {
   const incidentStatuses = useAppSelector((state) => state.incidents.statuses);
   const [searchParams] = useSearchParams();
 
-  // Fetch incidents on mount if authenticated
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchIncidents());
@@ -89,32 +88,26 @@ function App() {
 
   // Get incidents from Redux using normalized selector
   const incidents = useAppSelector(selectAllIncidents);
-  // Get connection status from Redux
   const connectionStatus = useAppSelector((state) => state.connection.status);
-  // Get error state
   const error = useAppSelector((state) => state.incidents.error);
 
-  // Filter and sort the data - all incidents
   const allFilteredData = filterAndSortIncidents(
     incidents,
     filters,
     incidentStatuses
   );
 
-  // Filter non-resolved incidents only (for "Incidents" tab)
   const incidentsFilteredData = allFilteredData.filter((incident) => {
     const currentStatus = incidentStatuses[incident.id] || incident.status;
     return currentStatus !== "RESOLVED";
   });
 
-  // Filter resolved incidents only (for "Resolved" tab)
   const resolvedFilteredData = allFilteredData.filter((incident) => {
     const currentStatus = incidentStatuses[incident.id] || incident.status;
     return currentStatus === "RESOLVED";
   });
 
   const handleStatusChange = (incidentId: string, newStatus: string) => {
-    // Update locally first for immediate UI feedback (optimistic update)
     dispatch(
       updateIncidentStatus({
         id: incidentId,
@@ -122,7 +115,6 @@ function App() {
       })
     );
 
-    // Then send update to server
     dispatch(
       updateIncidentStatusAsync({
         id: incidentId,

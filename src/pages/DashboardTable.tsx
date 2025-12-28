@@ -56,7 +56,6 @@ const DashboardTable = ({
       ? resolvedIncidentsData
       : allIncidentsData || filteredData;
 
-  // Reset to page 1 when data changes or tab changes
   useEffect(() => {
     setCurrentPage(1);
   }, [dataToDisplay.length, selectedTab]);
