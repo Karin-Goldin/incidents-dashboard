@@ -47,7 +47,11 @@ export default function ThemeSwitch() {
     if (saved) {
       return saved === "dark";
     }
-    // ברירת מחדל: dark mode (כפי שדורש ה-assignment)
+
+    if (document.documentElement.classList.contains("dark")) {
+      return true;
+    }
+    document.documentElement.classList.add("dark");
     return true;
   });
 
@@ -74,4 +78,3 @@ export default function ThemeSwitch() {
     />
   );
 }
-
