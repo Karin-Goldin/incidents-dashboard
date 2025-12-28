@@ -58,6 +58,7 @@ const authSlice = createSlice({
     },
     setToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
+      state.isAuthenticated = !!action.payload;
       localStorage.setItem("accessToken", action.payload);
     },
     clearError: (state) => {

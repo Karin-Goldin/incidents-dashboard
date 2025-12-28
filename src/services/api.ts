@@ -1,6 +1,21 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import { websocketService } from "./websocketService";
 
 const API_BASE_URL = "https://incident-platform.azurewebsites.net";
+
+// Store reference to avoid circular dependency
+// This will be set from store.ts after store is created
+let storeRef: {
+  dispatch: (action: { type: string; payload?: any }) => void;
+} | null = null;
+
+export const setStoreRef = (
+  store: {
+    dispatch: (action: { type: string; payload?: any }) => void;
+  }
+) => {
+  storeRef = store;
+};
 
 // Create axios instance with default config
 export const apiClient: AxiosInstance = axios.create({
@@ -72,6 +87,18 @@ apiClient.interceptors.response.use(
             response.data.token;
           if (accessToken) {
             localStorage.setItem("accessToken", accessToken);
+            // Update Redux store with new token if store is available
+            if (storeRef) {
+              // Use require to avoid circular dependency issues
+              const { setToken } = require("@/store/slices/authSlice");
+              storeRef.dispatch(setToken(accessToken));
+            }
+
+            // Disconnect WebSocket so it can reconnect with new token
+            // The useEffect in App.tsx will automatically reconnect when token changes in Redux
+            if (websocketService.isConnected()) {
+              websocketService.disconnect();
+            }
 
             // Retry original request with new token
             if (originalRequest.headers) {

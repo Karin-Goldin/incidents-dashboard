@@ -19,12 +19,10 @@ class WebSocketService {
   }
 
   connect(token: string, callbacks: WebSocketCallbacks = {}) {
-    if (this.socket?.connected) {
-      return;
-    }
-
+    // Always disconnect existing connection to reconnect with new token
     if (this.socket) {
       this.socket.disconnect();
+      this.socket.removeAllListeners();
       this.socket = null;
     }
 
