@@ -21,6 +21,12 @@ import { Button } from "@heroui/button";
 import { Pagination } from "@heroui/pagination";
 import { Spinner } from "@heroui/spinner";
 import { useAppSelector } from "@/store";
+import {
+  getChipSeverityColor,
+  getChipSeverityClasses,
+  getStatusColor,
+} from "@/utils/themeHelpers";
+import { formatTimestamp } from "@/utils/dateUtils";
 import warningAnimation from "../../warning.json";
 import type { Incident } from "@/types/incident";
 
@@ -59,78 +65,9 @@ const DashboardTable = ({
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedData = dataToDisplay.slice(startIndex, endIndex);
-  // Map severity to Chip color
-  const getChipSeverityColor = (
-    severity: string
-  ): "danger" | "warning" | "primary" | "success" => {
-    const severityMap: Record<
-      string,
-      "danger" | "warning" | "primary" | "success"
-    > = {
-      CRITICAL: "danger",
-      HIGH: "warning",
-      MEDIUM: "primary",
-      LOW: "success",
-    };
-    return severityMap[severity] || "default";
-  };
-
-  const getChipSeverityClasses = (severity: string): string => {
-    const classMap: Record<string, string> = {
-      CRITICAL: "bg-danger-50 text-danger",
-      HIGH: "bg-warning-50 text-warning",
-      MEDIUM: "bg-primary-50 text-primary",
-      LOW: "bg-success-50 text-success",
-    };
-    return classMap[severity] || "";
-  };
-
-  const getStatusColor = (
-    status: string
-  ): "primary" | "warning" | "success" | "default" => {
-    const statusMap: Record<
-      string,
-      "primary" | "warning" | "success" | "default"
-    > = {
-      OPEN: "primary",
-      ESCALATED: "warning",
-      RESOLVED: "success",
-    };
-    return statusMap[status] || "default";
-  };
 
   const handleStatusChange = (incidentId: string, newStatus: string) => {
     onStatusChange(incidentId, newStatus);
-  };
-
-  // Format timestamp to "Tue Jun 24 2025 09:49:53" format
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    const dayName = days[date.getDay()];
-    const monthName = months[date.getMonth()];
-    const day = date.getDate();
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    const seconds = date.getSeconds().toString().padStart(2, "0");
-
-    return `${dayName} ${monthName} ${day} ${year} ${hours}:${minutes}:${seconds}`;
   };
 
   if (isLoading) {

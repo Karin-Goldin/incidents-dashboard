@@ -13,51 +13,21 @@ import {
   CartesianGrid,
 } from "recharts";
 import { useAppSelector } from "@/store";
+import { getThemeColor } from "@/utils/themeHelpers";
+import {
+  countIncidentsBySeverity,
+  countIncidentsByStatus,
+  getTrendData,
+} from "@/utils/incidentUtils";
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const incidents = useAppSelector((state) => state.incidents.incidents);
   const incidentStatuses = useAppSelector((state) => state.incidents.statuses);
-  // an helper function to get the color from the theme for rechart
-  const getThemeColor = (colorName: string): string => {
-    const tempEl = document.createElement("div");
-    const colorClassMap: Record<string, string> = {
-      primary: "text-primary",
-      warning: "text-warning",
-      success: "text-success",
-    };
 
-    tempEl.className = colorClassMap[colorName] || "text-primary";
-    tempEl.style.position = "absolute";
-    tempEl.style.visibility = "hidden";
-    document.body.appendChild(tempEl);
-
-    const computedColor = getComputedStyle(tempEl).color;
-    document.body.removeChild(tempEl);
-
-    return computedColor;
-  };
-
-  const severityCounts = incidents.reduce(
-    (acc, incident) => {
-      const severity = incident.severity;
-      acc[severity] = (acc[severity] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
+  const severityCounts = countIncidentsBySeverity(incidents);
   const total = incidents.length;
-
-  const statusCounts = incidents.reduce(
-    (acc, incident) => {
-      // Use current status from Redux if available, otherwise use incident.status
-      const currentStatus = incidentStatuses[incident.id] || incident.status;
-      acc[currentStatus] = (acc[currentStatus] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+  const statusCounts = countIncidentsByStatus(incidents, incidentStatuses);
 
   const statusData = [
     {
@@ -149,61 +119,7 @@ const Dashboard = () => {
     }
   };
 
-  const getTrendData = () => {
-    if (incidents.length === 0) {
-      // Return empty data for last 7 days if no incidents
-      const days: Array<{ date: string; count: number }> = [];
-      const today = new Date();
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        days.push({
-          date: date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          }),
-          count: 0,
-        });
-      }
-      return days;
-    }
-
-    const latestDate = incidents.reduce((latest, incident) => {
-      const incidentDate = new Date(incident.timestamp);
-      return incidentDate > latest ? incidentDate : latest;
-    }, new Date(incidents[0].timestamp));
-
-    const days: Array<{ date: Date; dateStr: string; count: number }> = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(latestDate);
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      days.push({
-        date: date,
-        dateStr: date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        count: 0,
-      });
-    }
-
-    incidents.forEach((incident) => {
-      const incidentDate = new Date(incident.timestamp);
-      incidentDate.setHours(0, 0, 0, 0);
-
-      const dayData = days.find(
-        (d) => d.date.getTime() === incidentDate.getTime()
-      );
-      if (dayData) {
-        dayData.count++;
-      }
-    });
-
-    return days.map((d) => ({ date: d.dateStr, count: d.count }));
-  };
-
-  const trendData = getTrendData();
+  const trendData = getTrendData(incidents);
   const maxCount = Math.max(...trendData.map((d) => d.count), 1);
 
   return (

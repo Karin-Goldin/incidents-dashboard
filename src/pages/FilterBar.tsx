@@ -21,6 +21,7 @@ import {
   clearFilters,
   type FilterState,
 } from "@/store";
+import { updateFiltersInUrl } from "@/utils/urlUtils";
 
 const FilterBar = () => {
   const dispatch = useAppDispatch();
@@ -61,29 +62,7 @@ const FilterBar = () => {
 
   // Update URL params when filters change
   const updateUrlParams = (newFilters: FilterState) => {
-    const params = new URLSearchParams();
-
-    if (newFilters.severities.length > 0) {
-      params.set("severity", newFilters.severities.join(","));
-    }
-    if (newFilters.statuses.length > 0) {
-      params.set("status", newFilters.statuses.join(","));
-    }
-    if (newFilters.categories.length > 0) {
-      params.set("category", newFilters.categories.join(","));
-    }
-    if (newFilters.searchIp) {
-      params.set("searchIp", newFilters.searchIp);
-    }
-    if (newFilters.sortBy) {
-      params.set("sortBy", newFilters.sortBy);
-      params.set("sortOrder", newFilters.sortOrder);
-    }
-    if (newFilters.timeRange && newFilters.timeRange !== "all") {
-      params.set("timeRange", newFilters.timeRange);
-    }
-
-    setSearchParams(params, { replace: true });
+    updateFiltersInUrl(newFilters, setSearchParams);
   };
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { Chip } from "@heroui/chip";
 import { useState, useEffect } from "react";
 import { useAppSelector } from "@/store";
+import { getThemeColor } from "@/utils/themeHelpers";
 import ThemeSwitch from "@/components/ThemeSwitch";
 
 interface HeaderProps {
@@ -13,28 +14,6 @@ const Header = ({
   title = "Security Operations Center - Incident Dashboard",
   status: externalStatus,
 }: HeaderProps) => {
-  // Helper function to get HeroUI theme colors
-  const getThemeColor = (
-    colorName: "success" | "warning" | "danger"
-  ): string => {
-    const tempEl = document.createElement("div");
-    const colorClassMap: Record<string, string> = {
-      success: "text-success",
-      warning: "text-warning",
-      danger: "text-danger",
-    };
-
-    tempEl.className = colorClassMap[colorName] || "text-success";
-    tempEl.style.position = "absolute";
-    tempEl.style.visibility = "hidden";
-    document.body.appendChild(tempEl);
-
-    const computedColor = getComputedStyle(tempEl).color;
-    document.body.removeChild(tempEl);
-
-    return computedColor;
-  };
-
   // Connection status state (fallback אם לא נשלח מ-props)
   const [internalStatus] = useState<
     "connected" | "reconnecting" | "disconnected"

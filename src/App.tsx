@@ -5,6 +5,7 @@ import DashboardTable from "./pages/DashboardTable";
 import FilterBar from "./pages/FilterBar";
 import Login from "./pages/Login";
 import { filterAndSortIncidents } from "./utils/filterUtils";
+import { parseFiltersFromUrl } from "./utils/urlUtils";
 import {
   useAppDispatch,
   useAppSelector,
@@ -79,31 +80,8 @@ function App() {
 
   // Initialize filters from URL params
   useEffect(() => {
-    const severities =
-      searchParams.get("severity")?.split(",").filter(Boolean) || [];
-    const statuses =
-      searchParams.get("status")?.split(",").filter(Boolean) || [];
-    const categories =
-      searchParams.get("category")?.split(",").filter(Boolean) || [];
-    const searchIp = searchParams.get("searchIp") || "";
-    const sortBy =
-      (searchParams.get("sortBy") as "timestamp" | "severity") || "";
-    const sortOrder =
-      (searchParams.get("sortOrder") as "asc" | "desc") || "desc";
-    const timeRange =
-      (searchParams.get("timeRange") as "all" | "24h" | "7d" | "30d") || "all";
-
-    dispatch(
-      setFilters({
-        severities,
-        statuses,
-        categories,
-        searchIp,
-        sortBy,
-        sortOrder,
-        timeRange,
-      })
-    );
+    const filtersFromUrl = parseFiltersFromUrl(searchParams);
+    dispatch(setFilters(filtersFromUrl));
   }, [searchParams, dispatch]);
 
   // Get incidents from Redux
