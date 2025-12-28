@@ -210,7 +210,7 @@ const Dashboard = () => {
     <div className="grid grid-cols-3 gap-4 p-4">
       <Card className="py-4 flex flex-col h-full">
         <CardHeader className="pb-0 pt-2 px-4 flex justify-between items-center">
-          <h4 className="font-bold text-large">Incidents</h4>
+          <h4 className="font-bold text-large">Incidents Breakdown</h4>
           <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
             total: {total}
           </span>
@@ -224,9 +224,9 @@ const Dashboard = () => {
                   key={severity.name}
                   className={`w-full py-2 px-3 shadow-none ${
                     isSelected
-                      ? "bg-primary-50 border-2 border-primary"
-                      : "bg-foreground-50 border-2 border-transparent"
-                  } hover:bg-foreground-100 cursor-pointer transition-colors`}
+                      ? "bg-primary/20 border-2 border-primary"
+                      : "bg-default-100 border-2 border-transparent"
+                  } hover:bg-default-200 cursor-pointer transition-colors`}
                   isPressable
                   onPress={() => handleSeverityClick(severity.name)}
                 >
