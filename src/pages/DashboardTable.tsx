@@ -85,7 +85,7 @@ const DashboardTable = ({
   }
 
   return (
-    <Card>
+    <Card className="-ml-2">
       <CardBody>
         <Tabs
           aria-label="Incidents tabs"
@@ -93,18 +93,18 @@ const DashboardTable = ({
           onSelectionChange={(key: string | number) =>
             setSelectedTab(key as string)
           }
-          className="mb-4"
+          className="mb-4 ml-4"
         >
           <Tab key="incidents" title="Incidents" />
           <Tab key="resolved" title="Resolved" />
         </Tabs>
-        <Table aria-label="Example static collection table">
+        <Table aria-label="Example static collection table" className="">
           <TableHeader>
             <TableColumn className="text-center">SEVERITY</TableColumn>
-            <TableColumn className="text-center">CATEGORY</TableColumn>
-            <TableColumn className="text-center">SOURCE</TableColumn>
-            <TableColumn className="text-center">TIMESTAMP</TableColumn>
-            <TableColumn className="text-center">STATUS</TableColumn>
+            <TableColumn>CATEGORY</TableColumn>
+            <TableColumn>SOURCE</TableColumn>
+            <TableColumn>TIMESTAMP</TableColumn>
+            <TableColumn className="pl-6 pr-0">STATUS</TableColumn>
           </TableHeader>
           <TableBody
             emptyContent={
@@ -141,7 +141,7 @@ const DashboardTable = ({
                           {incident.severity}
                         </Chip>
                         {isCriticalOpen && (
-                          <div className="absolute left-[calc(50%+2.5rem)] top-1/2 -translate-y-1/2 w-10 h-10 flex-shrink-0">
+                          <div className="absolute left-[calc(50%+1.5rem)] top-1/2 -translate-y-1/2 w-10 h-10 flex-shrink-0">
                             <Lottie
                               animationData={warningAnimation}
                               loop={true}
@@ -151,46 +151,42 @@ const DashboardTable = ({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {incident.category}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {incident.source}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {formatTimestamp(incident.timestamp)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Dropdown className="text-center">
-                        <DropdownTrigger className="text-center">
-                          <Button
-                            variant="solid"
-                            color={getStatusColor(currentStatus)}
-                            size="sm"
-                            className="text-white min-w-[100px]"
+                    <TableCell>{incident.category}</TableCell>
+                    <TableCell>{incident.source}</TableCell>
+                    <TableCell>{formatTimestamp(incident.timestamp)}</TableCell>
+                    <TableCell className="!pl-0">
+                      <div className="flex justify-start">
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button
+                              variant="solid"
+                              color={getStatusColor(currentStatus)}
+                              size="sm"
+                              className="text-white min-w-[100px] pl-0 pr-0"
+                            >
+                              {currentStatus}
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            aria-label="Status actions"
+                            onAction={(key) =>
+                              handleStatusChange(incident.id, key as string)
+                            }
+                            selectedKeys={[currentStatus]}
+                            selectionMode="single"
                           >
-                            {currentStatus}
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          aria-label="Status actions"
-                          onAction={(key) =>
-                            handleStatusChange(incident.id, key as string)
-                          }
-                          selectedKeys={[currentStatus]}
-                          selectionMode="single"
-                        >
-                          <DropdownItem key="OPEN" color="primary">
-                            OPEN
-                          </DropdownItem>
-                          <DropdownItem key="ESCALATED" color="warning">
-                            ESCALATED
-                          </DropdownItem>
-                          <DropdownItem key="RESOLVED" color="success">
-                            RESOLVED
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
+                            <DropdownItem key="OPEN" color="primary">
+                              OPEN
+                            </DropdownItem>
+                            <DropdownItem key="ESCALATED" color="warning">
+                              ESCALATED
+                            </DropdownItem>
+                            <DropdownItem key="RESOLVED" color="success">
+                              RESOLVED
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
