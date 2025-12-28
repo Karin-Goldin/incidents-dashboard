@@ -9,6 +9,7 @@ import {
   useAppDispatch,
   useAppSelector,
   setFilters,
+  updateIncidentStatus,
   updateIncidentStatusAsync,
   fetchIncidents,
   addIncident,
@@ -110,15 +111,35 @@ function App() {
   // Get connection status from Redux
   const connectionStatus = useAppSelector((state) => state.connection.status);
 
-  // Filter and sort the data
-  const filteredData = filterAndSortIncidents(
+  // Filter and sort the data - all incidents
+  const allFilteredData = filterAndSortIncidents(
     incidents,
     filters,
     incidentStatuses
   );
 
+  // Filter non-resolved incidents only (for "Incidents" tab)
+  const incidentsFilteredData = allFilteredData.filter((incident) => {
+    const currentStatus = incidentStatuses[incident.id] || incident.status;
+    return currentStatus !== "RESOLVED";
+  });
+
+  // Filter resolved incidents only (for "Resolved" tab)
+  const resolvedFilteredData = allFilteredData.filter((incident) => {
+    const currentStatus = incidentStatuses[incident.id] || incident.status;
+    return currentStatus === "RESOLVED";
+  });
+
   const handleStatusChange = (incidentId: string, newStatus: string) => {
-    // Send update to server
+    // Update locally first for immediate UI feedback (optimistic update)
+    dispatch(
+      updateIncidentStatus({
+        id: incidentId,
+        status: newStatus,
+      })
+    );
+
+    // Then send update to server
     dispatch(
       updateIncidentStatusAsync({
         id: incidentId,
@@ -137,11 +158,15 @@ function App() {
       <Header status={connectionStatus} />
       <Dashboard />
       <FilterBar />
-      <DashboardTable
-        filteredData={filteredData}
-        incidentStatuses={incidentStatuses}
-        onStatusChange={handleStatusChange}
-      />
+      <div>
+        <DashboardTable
+          filteredData={incidentsFilteredData}
+          incidentStatuses={incidentStatuses}
+          onStatusChange={handleStatusChange}
+          allIncidentsData={incidentsFilteredData}
+          resolvedIncidentsData={resolvedFilteredData}
+        />
+      </div>
     </>
   );
 }

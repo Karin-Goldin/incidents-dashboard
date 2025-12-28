@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Lottie from "lottie-react";
+import { Tabs, Tab } from "@heroui/tabs";
+import { Card, CardBody } from "@heroui/card";
 import {
   Table,
   TableHeader,
@@ -26,26 +28,37 @@ interface DashboardTableProps {
   filteredData: Incident[];
   incidentStatuses: Record<string, string>;
   onStatusChange: (incidentId: string, newStatus: string) => void;
+  allIncidentsData?: Incident[];
+  resolvedIncidentsData?: Incident[];
 }
 
 const DashboardTable = ({
   filteredData,
   incidentStatuses,
   onStatusChange,
+  allIncidentsData,
+  resolvedIncidentsData,
 }: DashboardTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTab, setSelectedTab] = useState("incidents");
   const rowsPerPage = 5;
   const isLoading = useAppSelector((state) => state.incidents.isLoading);
 
-  // Reset to page 1 when filtered data changes
+  // Determine which data to use based on tab selection
+  const dataToDisplay =
+    selectedTab === "resolved" && resolvedIncidentsData
+      ? resolvedIncidentsData
+      : allIncidentsData || filteredData;
+
+  // Reset to page 1 when data changes or tab changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filteredData.length]);
+  }, [dataToDisplay.length, selectedTab]);
 
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const totalPages = Math.ceil(dataToDisplay.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedData = filteredData.slice(startIndex, endIndex);
+  const paginatedData = dataToDisplay.slice(startIndex, endIndex);
   // Map severity to Chip color
   const getChipSeverityColor = (
     severity: string
@@ -122,7 +135,7 @@ const DashboardTable = ({
 
   if (isLoading) {
     return (
-      <div className="p-4 flex justify-center items-center min-h-[400px]">
+      <div className="flex justify-center items-center min-h-[400px] py-4">
         <div className="flex flex-col items-center gap-4">
           <Spinner
             classNames={{ label: "text-foreground mt-4" }}
@@ -135,118 +148,131 @@ const DashboardTable = ({
   }
 
   return (
-    <div className="p-4">
-      <Table aria-label="Example static collection table">
-        <TableHeader>
-          <TableColumn className="text-center">SEVERITY</TableColumn>
-          <TableColumn className="text-center">CATEGORY</TableColumn>
-          <TableColumn className="text-center">SOURCE</TableColumn>
-          <TableColumn className="text-center">TIMESTAMP</TableColumn>
-          <TableColumn className="text-center">STATUS</TableColumn>
-        </TableHeader>
-        <TableBody
-          emptyContent={
-            filteredData.length === 0 ? "No incidents found" : undefined
+    <Card>
+      <CardBody>
+        <Tabs
+          aria-label="Incidents tabs"
+          selectedKey={selectedTab}
+          onSelectionChange={(key: string | number) =>
+            setSelectedTab(key as string)
           }
+          className="mb-4"
         >
-          {paginatedData.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                No incidents to display
-              </TableCell>
-            </TableRow>
-          ) : (
-            paginatedData.map((incident) => {
-              const currentStatus =
-                incidentStatuses[incident.id] || incident.status;
-              const isCriticalOpen =
-                incident.severity === "CRITICAL" && currentStatus === "OPEN";
+          <Tab key="incidents" title="Incidents" />
+          <Tab key="resolved" title="Resolved" />
+        </Tabs>
+        <Table aria-label="Example static collection table">
+          <TableHeader>
+            <TableColumn className="text-center">SEVERITY</TableColumn>
+            <TableColumn className="text-center">CATEGORY</TableColumn>
+            <TableColumn className="text-center">SOURCE</TableColumn>
+            <TableColumn className="text-center">TIMESTAMP</TableColumn>
+            <TableColumn className="text-center">STATUS</TableColumn>
+          </TableHeader>
+          <TableBody
+            emptyContent={
+              dataToDisplay.length === 0 ? "No incidents found" : undefined
+            }
+          >
+            {paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  No incidents to display
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedData.map((incident) => {
+                const currentStatus =
+                  incidentStatuses[incident.id] || incident.status;
+                const isCriticalOpen =
+                  incident.severity === "CRITICAL" && currentStatus === "OPEN";
 
-              return (
-                <TableRow
-                  key={incident.id}
-                  className="hover:bg-default-100 cursor-pointer transition-colors"
-                >
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center relative">
-                      <Chip
-                        color={getChipSeverityColor(incident.severity)}
-                        variant="flat"
-                        className={`${getChipSeverityClasses(incident.severity)} min-w-[85px] justify-center ${
-                          isCriticalOpen ? "animate-blink-chip" : ""
-                        }`}
-                      >
-                        {incident.severity}
-                      </Chip>
-                      {isCriticalOpen && (
-                        <div className="absolute left-[calc(50%+2.5rem)] top-1/2 -translate-y-1/2 w-10 h-10 flex-shrink-0">
-                          <Lottie
-                            animationData={warningAnimation}
-                            loop={true}
-                            autoplay={true}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {incident.category}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {incident.source}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {formatTimestamp(incident.timestamp)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Dropdown className="text-center">
-                      <DropdownTrigger className="text-center">
-                        <Button
-                          variant="solid"
-                          color={getStatusColor(currentStatus)}
-                          size="sm"
-                          className="text-white min-w-[100px]"
+                return (
+                  <TableRow
+                    key={incident.id}
+                    className="hover:bg-default-100 cursor-pointer transition-colors"
+                  >
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center relative">
+                        <Chip
+                          color={getChipSeverityColor(incident.severity)}
+                          variant="flat"
+                          className={`${getChipSeverityClasses(incident.severity)} min-w-[85px] justify-center ${
+                            isCriticalOpen ? "animate-blink-chip" : ""
+                          }`}
                         >
-                          {currentStatus}
-                        </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        aria-label="Status actions"
-                        onAction={(key) =>
-                          handleStatusChange(incident.id, key as string)
-                        }
-                        selectedKeys={[currentStatus]}
-                        selectionMode="single"
-                      >
-                        <DropdownItem key="OPEN" color="primary">
-                          OPEN
-                        </DropdownItem>
-                        <DropdownItem key="ESCALATED" color="warning">
-                          ESCALATED
-                        </DropdownItem>
-                        <DropdownItem key="RESOLVED" color="success">
-                          RESOLVED
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
-      <div className="flex justify-center mt-4">
-        <Pagination
-          isCompact
-          showControls
-          initialPage={1}
-          page={currentPage}
-          total={totalPages}
-          onChange={(page) => setCurrentPage(page)}
-        />
-      </div>
-    </div>
+                          {incident.severity}
+                        </Chip>
+                        {isCriticalOpen && (
+                          <div className="absolute left-[calc(50%+2.5rem)] top-1/2 -translate-y-1/2 w-10 h-10 flex-shrink-0">
+                            <Lottie
+                              animationData={warningAnimation}
+                              loop={true}
+                              autoplay={true}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {incident.category}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {incident.source}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatTimestamp(incident.timestamp)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Dropdown className="text-center">
+                        <DropdownTrigger className="text-center">
+                          <Button
+                            variant="solid"
+                            color={getStatusColor(currentStatus)}
+                            size="sm"
+                            className="text-white min-w-[100px]"
+                          >
+                            {currentStatus}
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          aria-label="Status actions"
+                          onAction={(key) =>
+                            handleStatusChange(incident.id, key as string)
+                          }
+                          selectedKeys={[currentStatus]}
+                          selectionMode="single"
+                        >
+                          <DropdownItem key="OPEN" color="primary">
+                            OPEN
+                          </DropdownItem>
+                          <DropdownItem key="ESCALATED" color="warning">
+                            ESCALATED
+                          </DropdownItem>
+                          <DropdownItem key="RESOLVED" color="success">
+                            RESOLVED
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+        <div className="flex justify-center mt-4">
+          <Pagination
+            isCompact
+            showControls
+            initialPage={1}
+            page={currentPage}
+            total={totalPages}
+            onChange={(page) => setCurrentPage(page)}
+          />
+        </div>
+      </CardBody>
+    </Card>
   );
 };
 
