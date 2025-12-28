@@ -9,7 +9,7 @@ import {
   useAppDispatch,
   useAppSelector,
   setFilters,
-  updateIncidentStatus,
+  updateIncidentStatusAsync,
   fetchIncidents,
   addIncident,
 } from "./store";
@@ -118,7 +118,13 @@ function App() {
   );
 
   const handleStatusChange = (incidentId: string, newStatus: string) => {
-    dispatch(updateIncidentStatus({ id: incidentId, status: newStatus }));
+    // Send update to server
+    dispatch(
+      updateIncidentStatusAsync({
+        id: incidentId,
+        status: newStatus as "OPEN" | "ESCALATED" | "RESOLVED",
+      })
+    );
   };
 
   // Show login page if not authenticated

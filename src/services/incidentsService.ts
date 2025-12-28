@@ -16,4 +16,17 @@ export const incidentsService = {
 
     return Array.isArray(data) ? data : [];
   },
+
+  async updateIncidentStatus(
+    incidentId: string,
+    status: "OPEN" | "ESCALATED" | "RESOLVED"
+  ): Promise<Incident> {
+    const response = await apiClient.patch(`/api/incidents/${incidentId}`, {
+      status,
+    });
+
+    // Handle different possible response formats
+    const data = response.data;
+    return (data as any).incident || (data as any).data || data;
+  },
 };

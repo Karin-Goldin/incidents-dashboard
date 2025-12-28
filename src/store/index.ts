@@ -8,6 +8,7 @@ export {
   updateIncident,
   updateIncidentStatus,
   fetchIncidents,
+  updateIncidentStatusAsync,
 } from "./slices/incidentsSlice";
 export * from "./slices/authSlice";
 export * from "./slices/connectionSlice";

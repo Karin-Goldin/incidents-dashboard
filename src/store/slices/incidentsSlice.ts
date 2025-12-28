@@ -10,9 +10,19 @@ interface IncidentsState {
   error: string | null;
 }
 
+// Load saved statuses from localStorage on initialization
+const loadSavedStatuses = (): IncidentStatuses => {
+  try {
+    const saved = localStorage.getItem("incidentStatuses");
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+};
+
 const initialState: IncidentsState = {
   incidents: [],
-  statuses: {},
+  statuses: loadSavedStatuses(),
   isLoading: false,
   error: null,
 };
@@ -43,6 +53,29 @@ export const fetchIncidents = createAsyncThunk(
         error.response?.data?.message ||
           error.message ||
           "Failed to fetch incidents"
+      );
+    }
+  }
+);
+
+// Async thunk to update incident status on server
+export const updateIncidentStatusAsync = createAsyncThunk(
+  "incidents/updateIncidentStatus",
+  async (
+    { id, status }: { id: string; status: "OPEN" | "ESCALATED" | "RESOLVED" },
+    { rejectWithValue }
+  ) => {
+    try {
+      const updatedIncident = await incidentsService.updateIncidentStatus(
+        id,
+        status
+      );
+      return { id, status, incident: updatedIncident };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to update incident status"
       );
     }
   }
@@ -98,6 +131,8 @@ const incidentsSlice = createSlice({
       if (incident) {
         incident.status = action.payload.status as Incident["status"];
       }
+      // Persist status changes to localStorage
+      localStorage.setItem("incidentStatuses", JSON.stringify(state.statuses));
     },
     setStatuses: (state, action: PayloadAction<IncidentStatuses>) => {
       state.statuses = action.payload;
@@ -111,12 +146,68 @@ const incidentsSlice = createSlice({
       })
       .addCase(fetchIncidents.fulfilled, (state, action) => {
         state.isLoading = false;
+
+        // Load saved status changes from localStorage
+        const savedStatusesStr = localStorage.getItem("incidentStatuses");
+        const savedStatuses: IncidentStatuses = savedStatusesStr
+          ? JSON.parse(savedStatusesStr)
+          : {};
+
+        // Merge saved statuses with current state (current state takes precedence)
+        const localStatuses = { ...savedStatuses, ...state.statuses };
+
+        // Update incidents from server
         state.incidents = action.payload.incidents;
-        state.statuses = action.payload.statuses;
+
+        // Apply saved/local status changes to incidents from server
+        action.payload.incidents.forEach((incident) => {
+          if (localStatuses[incident.id]) {
+            // Use the saved/local status instead of server status
+            state.statuses[incident.id] = localStatuses[incident.id];
+            // Also update the incident object
+            const index = state.incidents.findIndex(
+              (inc) => inc.id === incident.id
+            );
+            if (index !== -1) {
+              state.incidents[index].status = localStatuses[
+                incident.id
+              ] as Incident["status"];
+            }
+          } else {
+            // Use server status if no local change
+            state.statuses[incident.id] = incident.status;
+          }
+        });
+
+        // Save the merged statuses back to localStorage
+        localStorage.setItem(
+          "incidentStatuses",
+          JSON.stringify(state.statuses)
+        );
+
         state.error = null;
       })
       .addCase(fetchIncidents.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(updateIncidentStatusAsync.fulfilled, (state, action) => {
+        // Update status in both statuses map and incident object
+        state.statuses[action.payload.id] = action.payload.status;
+        const incident = state.incidents.find(
+          (inc) => inc.id === action.payload.id
+        );
+        if (incident) {
+          incident.status = action.payload.status;
+        }
+        // Persist status changes to localStorage
+        localStorage.setItem(
+          "incidentStatuses",
+          JSON.stringify(state.statuses)
+        );
+      })
+      .addCase(updateIncidentStatusAsync.rejected, (state, action) => {
+        // Optionally handle error (could show a toast notification)
         state.error = action.payload as string;
       });
   },
