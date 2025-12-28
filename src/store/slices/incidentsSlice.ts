@@ -1,10 +1,22 @@
-import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  PayloadAction,
+  createAsyncThunk,
+  createEntityAdapter,
+} from "@reduxjs/toolkit";
 import { incidentsService } from "@/services/incidentsService";
 import type { IncidentStatuses } from "../types";
 import type { Incident } from "@/types/incident";
 
-interface IncidentsState {
-  incidents: Incident[];
+// Create entity adapter for normalized state management
+const incidentsAdapter = createEntityAdapter<Incident>({
+  // Sort by timestamp descending (most recent first)
+  sortComparer: (a, b) =>
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+});
+
+interface IncidentsState
+  extends ReturnType<typeof incidentsAdapter.getInitialState> {
   statuses: IncidentStatuses;
   isLoading: boolean;
   error: string | null;
@@ -20,12 +32,11 @@ const loadSavedStatuses = (): IncidentStatuses => {
   }
 };
 
-const initialState: IncidentsState = {
-  incidents: [],
+const initialState: IncidentsState = incidentsAdapter.getInitialState({
   statuses: loadSavedStatuses(),
   isLoading: false,
   error: null,
-};
+});
 
 // Async thunk to fetch incidents from API
 export const fetchIncidents = createAsyncThunk(
@@ -86,7 +97,7 @@ const incidentsSlice = createSlice({
   initialState,
   reducers: {
     setIncidents: (state, action: PayloadAction<Incident[]>) => {
-      state.incidents = action.payload;
+      incidentsAdapter.setAll(state, action.payload);
       // Update statuses when incidents are set
       state.statuses = action.payload.reduce((acc, incident) => {
         acc[incident.id] = incident.status;
@@ -94,42 +105,30 @@ const incidentsSlice = createSlice({
       }, {} as IncidentStatuses);
     },
     addIncident: (state, action: PayloadAction<Incident>) => {
-      // Check if incident already exists (avoid duplicates)
-      const existingIndex = state.incidents.findIndex(
-        (inc) => inc.id === action.payload.id
-      );
-
-      if (existingIndex === -1) {
-        // Add new incident at the beginning (most recent first)
-        state.incidents.unshift(action.payload);
-        state.statuses[action.payload.id] = action.payload.status;
-      } else {
-        // Update existing incident
-        state.incidents[existingIndex] = action.payload;
-        state.statuses[action.payload.id] = action.payload.status;
-      }
+      // upsertOne handles both add and update (O(1) operation)
+      incidentsAdapter.upsertOne(state, action.payload);
+      state.statuses[action.payload.id] = action.payload.status;
     },
     updateIncident: (state, action: PayloadAction<Incident>) => {
-      const index = state.incidents.findIndex(
-        (inc) => inc.id === action.payload.id
-      );
-
-      if (index !== -1) {
-        state.incidents[index] = action.payload;
-        state.statuses[action.payload.id] = action.payload.status;
-      }
+      // updateOne is O(1) operation
+      incidentsAdapter.updateOne(state, {
+        id: action.payload.id,
+        changes: action.payload,
+      });
+      state.statuses[action.payload.id] = action.payload.status;
     },
     updateIncidentStatus: (
       state,
       action: PayloadAction<{ id: string; status: string }>
     ) => {
       state.statuses[action.payload.id] = action.payload.status;
-      // Also update the incident object if it exists
-      const incident = state.incidents.find(
-        (inc) => inc.id === action.payload.id
-      );
-      if (incident) {
-        incident.status = action.payload.status as Incident["status"];
+      // Update the incident object if it exists (O(1) operation)
+      const existingIncident = state.entities[action.payload.id];
+      if (existingIncident) {
+        incidentsAdapter.updateOne(state, {
+          id: action.payload.id,
+          changes: { status: action.payload.status as Incident["status"] },
+        });
       }
       // Persist status changes to localStorage
       localStorage.setItem("incidentStatuses", JSON.stringify(state.statuses));
@@ -156,27 +155,26 @@ const incidentsSlice = createSlice({
         // Merge saved statuses with current state (current state takes precedence)
         const localStatuses = { ...savedStatuses, ...state.statuses };
 
-        // Update incidents from server
-        state.incidents = action.payload.incidents;
-
-        // Apply saved/local status changes to incidents from server
-        action.payload.incidents.forEach((incident) => {
-          if (localStatuses[incident.id]) {
-            // Use the saved/local status instead of server status
-            state.statuses[incident.id] = localStatuses[incident.id];
-            // Also update the incident object
-            const index = state.incidents.findIndex(
-              (inc) => inc.id === incident.id
-            );
-            if (index !== -1) {
-              state.incidents[index].status = localStatuses[
-                incident.id
-              ] as Incident["status"];
+        // Apply saved/local status changes to incidents from server before setting them
+        const incidentsWithLocalStatuses = action.payload.incidents.map(
+          (incident) => {
+            if (localStatuses[incident.id]) {
+              // Use the saved/local status instead of server status
+              return {
+                ...incident,
+                status: localStatuses[incident.id] as Incident["status"],
+              };
             }
-          } else {
-            // Use server status if no local change
-            state.statuses[incident.id] = incident.status;
+            return incident;
           }
+        );
+
+        // Update incidents from server (O(n) operation, but only on fetch)
+        incidentsAdapter.setAll(state, incidentsWithLocalStatuses);
+
+        // Update statuses map
+        incidentsWithLocalStatuses.forEach((incident) => {
+          state.statuses[incident.id] = incident.status;
         });
 
         // Save the merged statuses back to localStorage
@@ -192,13 +190,14 @@ const incidentsSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(updateIncidentStatusAsync.fulfilled, (state, action) => {
-        // Update status in both statuses map and incident object
+        // Update status in both statuses map and incident object (O(1) operation)
         state.statuses[action.payload.id] = action.payload.status;
-        const incident = state.incidents.find(
-          (inc) => inc.id === action.payload.id
-        );
-        if (incident) {
-          incident.status = action.payload.status;
+        const existingIncident = state.entities[action.payload.id];
+        if (existingIncident) {
+          incidentsAdapter.updateOne(state, {
+            id: action.payload.id,
+            changes: { status: action.payload.status },
+          });
         }
         // Persist status changes to localStorage
         localStorage.setItem(
@@ -220,5 +219,17 @@ export const {
   updateIncidentStatus,
   setStatuses,
 } = incidentsSlice.actions;
+
+// Export selectors for normalized state
+// These selectors will be properly typed when used with RootState in components
+export const {
+  selectAll: selectAllIncidents,
+  selectById: selectIncidentById,
+  selectIds: selectIncidentIds,
+  selectEntities: selectIncidentEntities,
+  selectTotal: selectIncidentTotal,
+} = incidentsAdapter.getSelectors<{ incidents: IncidentsState }>(
+  (state) => state.incidents
+);
 
 export default incidentsSlice.reducer;

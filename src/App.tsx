@@ -14,6 +14,7 @@ import {
   updateIncidentStatusAsync,
   fetchIncidents,
   addIncident,
+  selectAllIncidents,
 } from "./store";
 import { websocketService } from "./services/websocketService";
 import { setStatus, setLastUpdate } from "./store";
@@ -84,8 +85,8 @@ function App() {
     dispatch(setFilters(filtersFromUrl));
   }, [searchParams, dispatch]);
 
-  // Get incidents from Redux
-  const incidents = useAppSelector((state) => state.incidents.incidents);
+  // Get incidents from Redux using normalized selector
+  const incidents = useAppSelector(selectAllIncidents);
   // Get connection status from Redux
   const connectionStatus = useAppSelector((state) => state.connection.status);
 

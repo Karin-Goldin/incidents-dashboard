@@ -13,7 +13,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { useAppSelector } from "@/store";
+import { useAppSelector, selectAllIncidents } from "@/store";
 import { getThemeColor } from "@/utils/themeHelpers";
 import {
   countIncidentsBySeverity,
@@ -23,7 +23,7 @@ import {
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const incidents = useAppSelector((state) => state.incidents.incidents);
+  const incidents = useAppSelector(selectAllIncidents);
   const incidentStatuses = useAppSelector((state) => state.incidents.statuses);
   const isLoading = useAppSelector((state) => state.incidents.isLoading);
 

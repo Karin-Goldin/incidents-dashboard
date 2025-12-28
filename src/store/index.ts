@@ -9,6 +9,11 @@ export {
   updateIncidentStatus,
   fetchIncidents,
   updateIncidentStatusAsync,
+  selectAllIncidents,
+  selectIncidentById,
+  selectIncidentIds,
+  selectIncidentEntities,
+  selectIncidentTotal,
 } from "./slices/incidentsSlice";
 export * from "./slices/authSlice";
 export * from "./slices/connectionSlice";

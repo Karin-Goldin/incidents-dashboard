@@ -19,6 +19,7 @@ import {
   setSortOrder,
   setTimeRange,
   clearFilters,
+  selectAllIncidents,
   type FilterState,
 } from "@/store";
 import { updateFiltersInUrl } from "@/utils/urlUtils";
@@ -26,7 +27,7 @@ import { updateFiltersInUrl } from "@/utils/urlUtils";
 const FilterBar = () => {
   const dispatch = useAppDispatch();
   const filters = useAppSelector((state) => state.filters);
-  const incidents = useAppSelector((state) => state.incidents.incidents);
+  const incidents = useAppSelector(selectAllIncidents);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalFilters, setModalFilters] = useState<FilterState>(filters);
