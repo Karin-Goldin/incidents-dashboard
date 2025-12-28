@@ -15,10 +15,12 @@ import {
   fetchIncidents,
   addIncident,
   selectAllIncidents,
+  clearError,
 } from "./store";
 import { websocketService } from "./services/websocketService";
 import { setStatus, setLastUpdate } from "./store";
 import Header from "./pages/Header";
+import ErrorBanner from "./components/ErrorBanner";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -89,6 +91,8 @@ function App() {
   const incidents = useAppSelector(selectAllIncidents);
   // Get connection status from Redux
   const connectionStatus = useAppSelector((state) => state.connection.status);
+  // Get error state
+  const error = useAppSelector((state) => state.incidents.error);
 
   // Filter and sort the data - all incidents
   const allFilteredData = filterAndSortIncidents(
@@ -127,6 +131,34 @@ function App() {
     );
   };
 
+  const lastFailedAction = useAppSelector(
+    (state) => state.incidents.lastFailedAction
+  );
+
+  const handleRetry = () => {
+    dispatch(clearError());
+    if (lastFailedAction.type === "fetch") {
+      dispatch(fetchIncidents());
+    } else if (
+      lastFailedAction.type === "updateStatus" &&
+      lastFailedAction.params
+    ) {
+      dispatch(
+        updateIncidentStatusAsync({
+          id: lastFailedAction.params.id,
+          status: lastFailedAction.params.status as
+            | "OPEN"
+            | "ESCALATED"
+            | "RESOLVED",
+        })
+      );
+    }
+  };
+
+  const handleDismissError = () => {
+    dispatch(clearError());
+  };
+
   // Show login page if not authenticated
   if (!isAuthenticated) {
     return <Login />;
@@ -135,6 +167,15 @@ function App() {
   return (
     <>
       <Header status={connectionStatus} />
+      {error && (
+        <div className="px-4">
+          <ErrorBanner
+            error={error}
+            onRetry={handleRetry}
+            onDismiss={handleDismissError}
+          />
+        </div>
+      )}
       <Dashboard />
       <FilterBar />
       <div>

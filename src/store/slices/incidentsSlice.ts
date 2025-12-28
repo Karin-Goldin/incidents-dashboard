@@ -20,6 +20,10 @@ interface IncidentsState
   statuses: IncidentStatuses;
   isLoading: boolean;
   error: string | null;
+  lastFailedAction: {
+    type: "fetch" | "updateStatus" | null;
+    params?: { id: string; status: string };
+  };
 }
 
 // Load saved statuses from localStorage on initialization
@@ -36,6 +40,9 @@ const initialState: IncidentsState = incidentsAdapter.getInitialState({
   statuses: loadSavedStatuses(),
   isLoading: false,
   error: null,
+  lastFailedAction: {
+    type: null,
+  },
 });
 
 // Async thunk to fetch incidents from API
@@ -136,12 +143,17 @@ const incidentsSlice = createSlice({
     setStatuses: (state, action: PayloadAction<IncidentStatuses>) => {
       state.statuses = action.payload;
     },
+    clearError: (state) => {
+      state.error = null;
+      state.lastFailedAction = { type: null };
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchIncidents.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.lastFailedAction = { type: null };
       })
       .addCase(fetchIncidents.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -184,10 +196,12 @@ const incidentsSlice = createSlice({
         );
 
         state.error = null;
+        state.lastFailedAction = { type: null };
       })
       .addCase(fetchIncidents.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+        state.lastFailedAction = { type: "fetch" };
       })
       .addCase(updateIncidentStatusAsync.fulfilled, (state, action) => {
         // Update status in both statuses map and incident object (O(1) operation)
@@ -204,10 +218,20 @@ const incidentsSlice = createSlice({
           "incidentStatuses",
           JSON.stringify(state.statuses)
         );
+        // Clear any previous errors on successful update
+        state.error = null;
+        state.lastFailedAction = { type: null };
       })
       .addCase(updateIncidentStatusAsync.rejected, (state, action) => {
-        // Optionally handle error (could show a toast notification)
         state.error = action.payload as string;
+        // Store the failed action parameters for retry
+        const meta = action.meta;
+        if (meta.arg) {
+          state.lastFailedAction = {
+            type: "updateStatus",
+            params: meta.arg as { id: string; status: string },
+          };
+        }
       });
   },
 });
@@ -218,6 +242,7 @@ export const {
   updateIncident,
   updateIncidentStatus,
   setStatuses,
+  clearError,
 } = incidentsSlice.actions;
 
 // Export selectors for normalized state

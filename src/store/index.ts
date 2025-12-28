@@ -9,6 +9,7 @@ export {
   updateIncidentStatus,
   fetchIncidents,
   updateIncidentStatusAsync,
+  clearError,
   selectAllIncidents,
   selectIncidentById,
   selectIncidentIds,
