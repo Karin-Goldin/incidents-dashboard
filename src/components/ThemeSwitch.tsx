@@ -40,18 +40,16 @@ export const SunIcon = (props: any) => {
 };
 
 export default function ThemeSwitch() {
-  // בדיקה אם כבר יש dark mode מוגדר (ברירת מחדל dark)
   const [isDark, setIsDark] = useState(() => {
-    // בדיקה אם יש העדפה שמורה ב-localStorage
     const saved = localStorage.getItem("theme");
-    if (saved) {
-      return saved === "dark";
-    }
-
-    if (document.documentElement.classList.contains("dark")) {
-      return true;
+    if (saved === "light") {
+      document.documentElement.classList.remove("dark");
+      return false;
     }
     document.documentElement.classList.add("dark");
+    if (!saved) {
+      localStorage.setItem("theme", "dark");
+    }
     return true;
   });
 

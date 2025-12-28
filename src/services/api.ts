@@ -108,18 +108,25 @@ apiClient.interceptors.response.use(
           }
         }
       } catch (refreshError) {
-        // Refresh failed, clear tokens
+        // Refresh failed, clear tokens and logout
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        // Force page reload to trigger auth check
-        window.location.reload();
+        // Update Redux store to logout user
+        if (storeRef) {
+          const { logout } = require("@/store/slices/authSlice");
+          storeRef.dispatch(logout());
+        }
         return Promise.reject(refreshError);
       }
 
-      // No refresh token available, clear auth and reload
+      // No refresh token available, clear auth and logout
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      window.location.reload();
+      // Update Redux store to logout user
+      if (storeRef) {
+        const { logout } = require("@/store/slices/authSlice");
+        storeRef.dispatch(logout());
+      }
     }
 
     return Promise.reject(error);
