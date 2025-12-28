@@ -85,10 +85,10 @@ const Header = ({
     <div
       className={`${statusConfig.bgColor} border-b border-default-200 backdrop-blur-md transition-all duration-500`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-3">
-        <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
           {/* Left: Status */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <div
@@ -105,19 +105,24 @@ const Header = ({
                   />
                 )}
               </div>
-              <span className={`font-semibold ${statusConfig.textColor}`}>
+              <span
+                className={`font-semibold text-sm md:text-base ${statusConfig.textColor}`}
+              >
                 {statusConfig.label}
               </span>
             </div>
 
-            <div className="h-4 w-px bg-default-300" />
+            <div className="hidden md:block h-4 w-px bg-default-300" />
 
-            <h1 className="font-bold text-lg text-foreground-700">{title}</h1>
+            <h1 className="font-bold text-base md:text-lg text-foreground-700">
+              <span className="hidden lg:inline">{title}</span>
+              <span className="lg:hidden">SOC Dashboard</span>
+            </h1>
           </div>
 
           {/* Right: Update Info */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-sm text-default-600">
+          <div className="flex items-center gap-3 md:gap-6 flex-wrap">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-default-600">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -149,16 +154,25 @@ const Header = ({
                     ? "warning"
                     : "danger"
               }
-              className="font-medium"
+              className="font-medium text-xs md:text-sm"
             >
-              {connectionStatus === "connected"
-                ? "Real-time Active"
-                : connectionStatus === "reconnecting"
-                  ? "Connecting..."
-                  : "Offline Mode"}
+              <span className="hidden md:inline">
+                {connectionStatus === "connected"
+                  ? "Real-time Active"
+                  : connectionStatus === "reconnecting"
+                    ? "Connecting..."
+                    : "Offline Mode"}
+              </span>
+              <span className="md:hidden">
+                {connectionStatus === "connected"
+                  ? "Active"
+                  : connectionStatus === "reconnecting"
+                    ? "Connecting"
+                    : "Offline"}
+              </span>
             </Chip>
 
-            <div className="h-4 w-px bg-default-300" />
+            <div className="hidden md:block h-4 w-px bg-default-300" />
 
             <ThemeSwitch />
           </div>

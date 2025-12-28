@@ -85,115 +85,123 @@ const DashboardTable = ({
   }
 
   return (
-    <Card className="-ml-2">
-      <CardBody>
+    <Card className="-ml-2 md:ml-0">
+      <CardBody className="p-2 md:p-6">
         <Tabs
           aria-label="Incidents tabs"
           selectedKey={selectedTab}
           onSelectionChange={(key: string | number) =>
             setSelectedTab(key as string)
           }
-          className="mb-4 ml-4"
+          className="mb-4 ml-2 md:ml-4"
         >
           <Tab key="incidents" title="Incidents" />
           <Tab key="resolved" title="Resolved" />
         </Tabs>
-        <Table aria-label="Example static collection table" className="">
-          <TableHeader>
-            <TableColumn className="text-center">SEVERITY</TableColumn>
-            <TableColumn>CATEGORY</TableColumn>
-            <TableColumn>SOURCE</TableColumn>
-            <TableColumn>TIMESTAMP</TableColumn>
-            <TableColumn className="pl-6 pr-0">STATUS</TableColumn>
-          </TableHeader>
-          <TableBody
-            emptyContent={
-              dataToDisplay.length === 0 ? "No incidents found" : undefined
-            }
+        <div className="overflow-x-auto">
+          <Table
+            aria-label="Example static collection table"
+            className="min-w-[600px]"
           >
-            {paginatedData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  No incidents to display
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedData.map((incident) => {
-                const currentStatus =
-                  incidentStatuses[incident.id] || incident.status;
-                const isCriticalOpen =
-                  incident.severity === "CRITICAL" && currentStatus === "OPEN";
+            <TableHeader>
+              <TableColumn className="text-center">SEVERITY</TableColumn>
+              <TableColumn>CATEGORY</TableColumn>
+              <TableColumn>SOURCE</TableColumn>
+              <TableColumn>TIMESTAMP</TableColumn>
+              <TableColumn className="pl-6 pr-0">STATUS</TableColumn>
+            </TableHeader>
+            <TableBody
+              emptyContent={
+                dataToDisplay.length === 0 ? "No incidents found" : undefined
+              }
+            >
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    No incidents to display
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedData.map((incident) => {
+                  const currentStatus =
+                    incidentStatuses[incident.id] || incident.status;
+                  const isCriticalOpen =
+                    incident.severity === "CRITICAL" &&
+                    currentStatus === "OPEN";
 
-                return (
-                  <TableRow
-                    key={incident.id}
-                    className="hover:bg-default-100 cursor-pointer transition-colors"
-                  >
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center relative">
-                        <Chip
-                          color={getChipSeverityColor(incident.severity)}
-                          variant="flat"
-                          className={`${getChipSeverityClasses(incident.severity)} min-w-[85px] justify-center ${
-                            isCriticalOpen ? "animate-blink-chip" : ""
-                          }`}
-                        >
-                          {incident.severity}
-                        </Chip>
-                        {isCriticalOpen && (
-                          <div className="absolute left-[calc(50%+1.5rem)] top-1/2 -translate-y-1/2 w-10 h-10 flex-shrink-0">
-                            <Lottie
-                              animationData={warningAnimation}
-                              loop={true}
-                              autoplay={true}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{incident.category}</TableCell>
-                    <TableCell>{incident.source}</TableCell>
-                    <TableCell>{formatTimestamp(incident.timestamp)}</TableCell>
-                    <TableCell className="!pl-0">
-                      <div className="flex justify-start">
-                        <Dropdown>
-                          <DropdownTrigger>
-                            <Button
-                              variant="solid"
-                              color={getStatusColor(currentStatus)}
-                              size="sm"
-                              className="text-white min-w-[100px] pl-0 pr-0"
-                            >
-                              {currentStatus}
-                            </Button>
-                          </DropdownTrigger>
-                          <DropdownMenu
-                            aria-label="Status actions"
-                            onAction={(key) =>
-                              handleStatusChange(incident.id, key as string)
-                            }
-                            selectedKeys={[currentStatus]}
-                            selectionMode="single"
+                  return (
+                    <TableRow
+                      key={incident.id}
+                      className="hover:bg-default-100 cursor-pointer transition-colors"
+                    >
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center relative">
+                          <Chip
+                            color={getChipSeverityColor(incident.severity)}
+                            variant="flat"
+                            className={`${getChipSeverityClasses(incident.severity)} min-w-[85px] justify-center ${
+                              isCriticalOpen ? "animate-blink-chip" : ""
+                            }`}
                           >
-                            <DropdownItem key="OPEN" color="primary">
-                              OPEN
-                            </DropdownItem>
-                            <DropdownItem key="ESCALATED" color="warning">
-                              ESCALATED
-                            </DropdownItem>
-                            <DropdownItem key="RESOLVED" color="success">
-                              RESOLVED
-                            </DropdownItem>
-                          </DropdownMenu>
-                        </Dropdown>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                            {incident.severity}
+                          </Chip>
+                          {isCriticalOpen && (
+                            <div className="absolute left-[calc(50%+1.5rem)] top-1/2 -translate-y-1/2 w-10 h-10 flex-shrink-0">
+                              <Lottie
+                                animationData={warningAnimation}
+                                loop={true}
+                                autoplay={true}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{incident.category}</TableCell>
+                      <TableCell>{incident.source}</TableCell>
+                      <TableCell>
+                        {formatTimestamp(incident.timestamp)}
+                      </TableCell>
+                      <TableCell className="!pl-0">
+                        <div className="flex justify-start">
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button
+                                variant="solid"
+                                color={getStatusColor(currentStatus)}
+                                size="sm"
+                                className="text-white min-w-[100px] pl-0 pr-0"
+                              >
+                                {currentStatus}
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              aria-label="Status actions"
+                              onAction={(key) =>
+                                handleStatusChange(incident.id, key as string)
+                              }
+                              selectedKeys={[currentStatus]}
+                              selectionMode="single"
+                            >
+                              <DropdownItem key="OPEN" color="primary">
+                                OPEN
+                              </DropdownItem>
+                              <DropdownItem key="ESCALATED" color="warning">
+                                ESCALATED
+                              </DropdownItem>
+                              <DropdownItem key="RESOLVED" color="success">
+                                RESOLVED
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
         <div className="flex justify-center mt-4">
           <Pagination
             isCompact

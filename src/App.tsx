@@ -168,7 +168,7 @@ function App() {
     <>
       <Header status={connectionStatus} />
       {error && (
-        <div className="px-4">
+        <div className="px-2 md:px-4">
           <ErrorBanner
             error={error}
             onRetry={handleRetry}

@@ -149,8 +149,8 @@ const FilterBar = () => {
     (filters.timeRange !== "all" ? 1 : 0);
 
   return (
-    <div className="p-4">
-      <div className="flex items-center gap-4 flex-wrap">
+    <div className="p-2 md:p-4">
+      <div className="flex items-center gap-2 md:gap-4 flex-wrap">
         <Button
           color="primary"
           variant="flat"
@@ -174,7 +174,7 @@ const FilterBar = () => {
           placeholder="Search by IP address"
           value={filters.searchIp}
           onValueChange={handleSearchIpChange}
-          className="max-w-xs"
+          className="w-full sm:max-w-xs"
           size="sm"
         />
 
@@ -198,7 +198,7 @@ const FilterBar = () => {
           </DropdownMenu>
         </Dropdown>
 
-        <div className="ml-2 flex items-center gap-4">
+        <div className="ml-0 md:ml-2 flex items-center gap-2 md:gap-4 flex-wrap">
           <Dropdown>
             <DropdownTrigger>
               <Button
